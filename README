@@ -1,0 +1,16 @@
+Sched is (will be) a batch process scheduling system allowing for tasks to be
+executed asynchronously across multiple cores but allowing for some tasks to be
+dependant on others. In this way, processes in the job that rely on other
+processes having completed will not be executed until the dependant has
+finished.
+
+Sched has been created for my third year project at the University of
+Southampton in order to facilitate batch processing a large amount of image data
+captured from a microscope without supervision.
+
+For instance, I have a large amount of images that need to be exposure fused,
+then once that is complete some of those images need to be focus stacked, then
+once that is complete the stacks need to be blended into a panorama. Sched
+enables all of this to be executed automatically.
+
+Note that there is no support for processes requiring concurrent access to data.
