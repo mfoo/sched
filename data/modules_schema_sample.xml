@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<moduleList xmlns:xsi="http://w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="sched.xsd">
+	<module name="hello">
+		<description>a module</description>
+		<command>echo "%0"</command>
+		<parameters>
+			<param>
+				<id>0</id>
+				<description>The string to echo</description>
+				<value>hello</value>
+			</param>
+		</parameters>
+
+	</module>
+</moduleList>
