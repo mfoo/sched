@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Mar 24 01:48:35 2010
+# Created: Wed Mar 24 17:19:39 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,9 +51,23 @@ class Ui_MainWindow(object):
         self.newGlobalModuleButton.setObjectName("newGlobalModuleButton")
         self.mappingsTable = QtGui.QTableWidget(self.centralWidget)
         self.mappingsTable.setGeometry(QtCore.QRect(320, 30, 411, 201))
+        self.mappingsTable.setAutoFillBackground(True)
+        self.mappingsTable.setAlternatingRowColors(True)
+        self.mappingsTable.setCornerButtonEnabled(False)
         self.mappingsTable.setObjectName("mappingsTable")
-        self.mappingsTable.setColumnCount(0)
+        self.mappingsTable.setColumnCount(3)
         self.mappingsTable.setRowCount(0)
+        item = QtGui.QTableWidgetItem()
+        self.mappingsTable.setHorizontalHeaderItem(0, item)
+        item = QtGui.QTableWidgetItem()
+        self.mappingsTable.setHorizontalHeaderItem(1, item)
+        item = QtGui.QTableWidgetItem()
+        self.mappingsTable.setHorizontalHeaderItem(2, item)
+        self.mappingsTable.horizontalHeader().setCascadingSectionResizes(True)
+        self.mappingsTable.horizontalHeader().setDefaultSectionSize(100)
+        self.mappingsTable.horizontalHeader().setMinimumSectionSize(10)
+#        self.mappingsTable.horizontalHeader().setShowSortIndicator(False)
+        self.mappingsTable.horizontalHeader().setStretchLastSection(True)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 830, 22))
@@ -92,6 +106,9 @@ class Ui_MainWindow(object):
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Project Modules", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Global Mappings", None, QtGui.QApplication.UnicodeUTF8))
         self.newGlobalModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Global Module", None, QtGui.QApplication.UnicodeUTF8))
+        self.mappingsTable.horizontalHeaderItem(0).setText(QtGui.QApplication.translate("MainWindow", "Symbol", None, QtGui.QApplication.UnicodeUTF8))
+        self.mappingsTable.horizontalHeaderItem(1).setText(QtGui.QApplication.translate("MainWindow", "Description", None, QtGui.QApplication.UnicodeUTF8))
+        self.mappingsTable.horizontalHeaderItem(2).setText(QtGui.QApplication.translate("MainWindow", "Mapping", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen_Project.setText(QtGui.QApplication.translate("MainWindow", "Open Project", None, QtGui.QApplication.UnicodeUTF8))
