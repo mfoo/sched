@@ -2,20 +2,17 @@
 
 import sys
 import os
-from PyQt4 import QtGui, QtCore
-from forms import Ui_MainWindow
-from forms import Ui_ModuleListWidget
-
-class FrmMainWindow(QtGui.QMainWindow):
-
-	def __init__(self, parent=None):
-		QtGui.QMainWindow.__init__(self, parent)		
-		self.ui = Ui_MainWindow.Ui_MainWindow()
-		self.ui.setupUi(self)
+#from PyQt4 import QtGui, QtCore
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+#from forms import Ui_MainWindow
+from forms import MainWindow
+#from forms import Ui_ModuleListWidget
+#from forms import ModuleListWidgetItem
 
 if __name__ == "__main__":
-	app = QtGui.QApplication(sys.argv)
-	window = FrmMainWindow()
+	app = QApplication(sys.argv)
+	window = MainWindow.MainWindow()
 	window.show()
 
 	# Load in the list of global modules
@@ -26,8 +23,27 @@ if __name__ == "__main__":
 		from imports import ModuleXMLParser
 		parser = ModuleXMLParser.ModuleXMLParser()
 		modules = parser.parse(xml)
-		for param in modules.parameters:
-			window.ui.listWidget.addItem(QtGui.QListWidgetItem(param.value))				
+		from forms import Ui_ModuleListWidget
+		window.ui.mappingsTable.setSortingEnabled(False)
+		
+		window.ui.mappingsTable.setRowCount(sum([len(x.parameters) for x in modules]) +1)
+		for module in modules:
+			ui = Ui_ModuleListWidget.Ui_ModuleListWidget(module,parent = window.ui.listWidget)
+			window.ui.listWidget.addItem(ui)
+#		window.setCentralWidget(Ui_ModuleListWidget.Ui_ModuleListWidget())
+			counter = 0
+			for param in module.parameters:
+				print "param found" , param.value, param.id, param.description
+	#			ui = Ui_ModuleListWidget.Ui_ModuleListWidget(param.value)
+				window.ui.mappingsTable.setItem(counter, 0, QTableWidgetItem(QString(param.id)))
+				window.ui.mappingsTable.setItem(counter, 1, QTableWidgetItem(QString(param.description)))
+				window.ui.mappingsTable.setItem(counter, 2, QTableWidgetItem(QString(param.value)))
+				counter += 1
+	#			ui = ModuleListWidgetItem.ModuleListWidgetItem()
+	#			ui.setupUi(widget)
+	#			widget.show()
+	#			window.ui.listWidget.addItem(ui)
+		window.ui.mappingsTable.setSortingEnabled(True)
 	except OSError:
 		print "Warning: ~/.sched doesn't exist. Attempting to create it."
 		try:
@@ -35,6 +51,7 @@ if __name__ == "__main__":
 			print "Success."
 		except OSError:
 			print "Error! Can't write to the home directory."
+			sys.exit(1)
 
 	
 	sys.exit(app.exec_())

@@ -1,101 +1,69 @@
 from xml.parsers import expat
-
-class Parameter():
-	def __init__(self):
-		self.id = ""
-		self.description = ""
-		self.value = ""
-
-	def addId(self, id):
-		self.id = id
-		
-	def addDescription(self, desc):
-		self.desc = desc
-		
-	def addValue(self, value):
-		self.value = value
-
-class Module():
-	
-	def __init__(self, name):
-		self.name = name
-		self.command = ""
-		self.parameters = []
-		self.description = ""
-
-	def addParameter(self, param):
-		self.parameters.append(param)
+from Parameter import Parameter
+from Module import Module
 
 class ModuleXMLParser:
 	def __init__(self):
-		# 3 handler functions
+		self.moduleList = []
+
 		self.currentModule = None
 		self.currentParam = None
-
-		self.currentItem = ""
-
-		self.currentDescription = ""
-		self.currentValue = ""
-		self.currentCommand = ""
+		self.cdata = ""
 
 		self.inDescription = False
 		self.inCommand = False
 		self.inValue = False
-
-		self.stack = []
+		self.inId = False
 
 	def start_element(self, name, attrs):
-		print "Start Element", name
 		if name == "module":
-			self.stack.append(name)
-			print 'Start element:', name, attrs
 			self.currentModule = Module(attrs['name'])
 		elif name == "param":
-			self.stack.append(name)
 			self.currentParam = Parameter()
 		elif name == "description":
-			if self.stack[-1] == "module":
-				self.inDescription = True
+			self.inDescription = True
 		elif name == "value":
 			self.inValue = True
 		elif name == "command":
 			self.inCommand = True
+		elif name == "id":
+			self.inId = True
 
-		print self.stack
 
 	def end_element(self, name):
-		if name == "module":
-			self.stack.pop()
-			#self.currentModule = None
-		elif name == "description":
+		if name == "description":
 			self.inDescription = False
-			self.currentModule.description = self.currentDescription
-			self.currentDescription = ""
+			if self.currentParam:
+				# Parser is inside a parameter, add the description to it
+				self.currentParam.addDescription(self.cdata)
+			else:
+				self.currentModule.addDescription(self.cdata)
+
+			self.cdata = ""
+		elif name == "value":
+			self.inValue = False
+			self.currentParam.addValue(self.cdata)
+			self.cdata = ""
+		elif name == "command":
+			self.inCommand = False
+			self.currentModule.addCommand(self.cdata)
+			self.cdata = ""
+		elif name == "id":
+			self.inId = False	
+			self.currentParam.addId(self.cdata)
+			self.cdata = ""
 		elif name == "param":
-			self.stack.pop()
 			self.currentModule.addParameter(self.currentParam)
 			self.currentParam = None
-		elif name == "value":
-			self.currentParam.addValue(self.currentValue)
-			self.currentValue = ""
-			self.inValue = False
-		elif name == "command":
-			self.currentModule.command = self.currentCommand
-			self.currentCommand = ""
-			self.inCommand = False
+		elif name == "module":
+			self.moduleList.append(self.currentModule)
 			
-		print self.stack
 
 	def char_data(self, data):
 		data = data.strip()
 		if data:
-			if self.inDescription:
-				self.currentDescription = self.currentDescription + data
-			elif self.inCommand:
-				self.currentCommand = self.currentCommand + data
-			elif self.inValue:
-				self.currentValue = self.currentValue + data
-				print self.currentValue
+			if self.inDescription or self.inId or self.inCommand or self.inValue:
+				self.cdata = self.cdata + data
 
 	def parse(self, text):
 
@@ -105,7 +73,8 @@ class ModuleXMLParser:
 		parser.EndElementHandler = self.end_element
 		parser.CharacterDataHandler = self.char_data
 		parser.Parse(text, 1)
-		return self.currentModule
+
+		return self.moduleList
 
 if __name__ == "__main__":
 	parser = ModuleXMLParser()
@@ -132,6 +101,5 @@ if __name__ == "__main__":
 
 	mod = parser.parse(input)	
 	for param in mod.parameters:
-		print "	Parameter found.", param.value, "s"
-#		print "		" , param.id. param.description, param.value
+		print "Parameter found. " , param.id, param.description, param.value
 
