@@ -4,3 +4,4 @@
 # if any of them have been edited
 pyuic4 mainwindow.ui > Ui_MainWindow.py
 pyuic4 newmodulewizard.ui > Ui_NewModuleWizard.py
+pyuic4 jobprocessingwindow.ui > Ui_JobProcessingWindow.py
