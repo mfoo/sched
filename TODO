@@ -1,8 +1,6 @@
 TODO:
 
-*	UI Mockup
-*	Write XML schema for describing a batch job
-*	Implement XML parser for batch job descriptions
+*	Clean up all code with PyLint
 *	Write XML schema for storing individual modules (global and local)
 *	Implement XML parser for global modules as well as project modules
 *	Look into creating a custom list view item to show module info
