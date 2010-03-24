@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This is a quick script to allow all of the Python UI classes to be recreated
+# if any of them have been edited
+pyuic4 mainwindow.ui > Ui_MainWindow.py
+
