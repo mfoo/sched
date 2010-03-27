@@ -1,7 +1,9 @@
 TODO:
 
 *	Clean up all code with PyLint
-*	Write XML schema for storing individual modules (global and local)
+*	Use loggers rather than printing
+*	Automatically determine number of CPU cores, e.g.
+		cat /proc/cpuinfo | grep "cpu cores" | uniq | sed 's/^.*\([0-9]\)/\1/'
 *	Implement XML parser for global modules as well as project modules
 *	Look into creating a custom list view item to show module info
 *	Add simple scripting to module setup
