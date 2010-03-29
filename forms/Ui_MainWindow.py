@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Mar 24 17:19:39 2010
+# Created: Mon Mar 29 18:22:01 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -68,6 +68,7 @@ class Ui_MainWindow(object):
         self.mappingsTable.horizontalHeader().setMinimumSectionSize(10)
 #        self.mappingsTable.horizontalHeader().setShowSortIndicator(False)
         self.mappingsTable.horizontalHeader().setStretchLastSection(True)
+        self.mappingsTable.verticalHeader().setVisible(False)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 830, 22))
@@ -90,8 +91,10 @@ class Ui_MainWindow(object):
         self.actionClose_Project.setObjectName("actionClose_Project")
         self.actionExit = QtGui.QAction(MainWindow)
         self.actionExit.setObjectName("actionExit")
+        self.actionSave_Project = QtGui.QAction(MainWindow)
+        self.actionSave_Project.setObjectName("actionSave_Project")
         self.menuFile.addAction(self.actionOpen_Project)
-        self.menuFile.addAction(self.actionClose_Project)
+        self.menuFile.addAction(self.actionSave_Project)
         self.menuFile.addAction(self.actionExit)
         self.menuBar.addAction(self.menuFile.menuAction())
 
@@ -114,4 +117,5 @@ class Ui_MainWindow(object):
         self.actionOpen_Project.setText(QtGui.QApplication.translate("MainWindow", "Open Project", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose_Project.setText(QtGui.QApplication.translate("MainWindow", "Close Project", None, QtGui.QApplication.UnicodeUTF8))
         self.actionExit.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_Project.setText(QtGui.QApplication.translate("MainWindow", "Save Project", None, QtGui.QApplication.UnicodeUTF8))
 
