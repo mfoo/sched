@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon Mar 29 18:22:01 2010
+# Created: Mon Mar 29 19:42:36 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,9 +18,9 @@ class Ui_MainWindow(object):
         self.label = QtGui.QLabel(self.centralWidget)
         self.label.setGeometry(QtCore.QRect(10, 10, 151, 16))
         self.label.setObjectName("label")
-        self.pushButton = QtGui.QPushButton(self.centralWidget)
-        self.pushButton.setGeometry(QtCore.QRect(740, 30, 85, 27))
-        self.pushButton.setObjectName("pushButton")
+        self.executeButton = QtGui.QPushButton(self.centralWidget)
+        self.executeButton.setGeometry(QtCore.QRect(740, 30, 85, 27))
+        self.executeButton.setObjectName("executeButton")
         self.newProjectModuleButton = QtGui.QPushButton(self.centralWidget)
         self.newProjectModuleButton.setGeometry(QtCore.QRect(170, 240, 131, 27))
         self.newProjectModuleButton.setObjectName("newProjectModuleButton")
@@ -104,7 +104,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Sched Flow Editor", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Global Modules", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "PushButton", None, QtGui.QApplication.UnicodeUTF8))
+        self.executeButton.setText(QtGui.QApplication.translate("MainWindow", "Execute", None, QtGui.QApplication.UnicodeUTF8))
         self.newProjectModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Project Module", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Project Modules", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Global Mappings", None, QtGui.QApplication.UnicodeUTF8))

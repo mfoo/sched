@@ -4,6 +4,7 @@ from forms.Ui_MainWindow import Ui_MainWindow
 from imports import Module, Parameter
 from forms.Ui_ModuleListWidget import Ui_ModuleListWidget
 import os
+from string import replace
 
 class MainWindow(QMainWindow):
     def __init__(self, parent = None):
@@ -21,7 +22,7 @@ class MainWindow(QMainWindow):
         self.connect(self.ui.actionOpen_Project, SIGNAL("activated()"), self.openFileClicked)
         self.connect(self.ui.actionSave_Project, SIGNAL("activated()"), self.saveProjectClicked)
         self.connect(self.ui.actionExit, SIGNAL("activated()"), self.closeProject)
-
+        self.connect(self.ui.executeButton, SIGNAL("clicked()"), self.execute)
         headers = ["Symbol", "Description", "Mapping"]
         self.ui.mappingsTable.setColumnCount(len(headers))
         self.ui.mappingsTable.setHorizontalHeaderLabels(headers)
@@ -34,6 +35,25 @@ class MainWindow(QMainWindow):
         fileName = QFileDialog.getOpenFileName(self, "Open File", os.path.expanduser("~"), "Sched files (*)")
         if fileName:
             self.loadProject(fileName)
+
+    def execute(self):
+        from imports.ProcessHandler import ProcessHandler
+        from imports.process import Process
+#        self.handler = ProcessHandler()
+        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
+        processes = []
+        for module in modules:
+            command = module.command
+            for param in module.parameters:
+                command = replace(command, param.id, param.value)
+            command = "sleep 5"
+            processes.append(Process(command))
+            
+        self.handler = ProcessHandler(processes)
+
+        self.handler.ui.show()
+       
+        self.handler.start()
 
     def saveProjectClicked(self):
         modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]

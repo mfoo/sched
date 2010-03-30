@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'jobprocessingwindow.ui'
 #
-# Created: Mon Mar 29 18:22:02 2010
+# Created: Mon Mar 29 19:42:37 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!

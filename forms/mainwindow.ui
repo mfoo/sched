@@ -27,7 +27,7 @@
      <string>Global Modules</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="executeButton">
     <property name="geometry">
      <rect>
       <x>740</x>
@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Execute</string>
     </property>
    </widget>
    <widget class="QPushButton" name="newProjectModuleButton">
