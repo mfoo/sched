@@ -10,5 +10,5 @@ if __name__ == "__main__":
 	window = MainWindow.MainWindow()
 	window.show()
 	window.loadGlobals()
-	
 	sys.exit(app.exec_())
+

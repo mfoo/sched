@@ -39,14 +39,14 @@ class MainWindow(QMainWindow):
     def execute(self):
         from imports.ProcessHandler import ProcessHandler
         from imports.process import Process
-#        self.handler = ProcessHandler()
         modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
         processes = []
         for module in modules:
             command = module.command
             for param in module.parameters:
                 command = replace(command, param.id, param.value)
-            command = "sleep 5"
+#            command = "sleep 5"
+                command = "sleep 5"
             processes.append(Process(command))
             
         self.handler = ProcessHandler(processes)
@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
         
     
     def globalModuleListClickHandler(self, item):
-        # TODO: Check if the module being loaded redefines any current parameter
+        # Check if the module being loaded redefines any current parameter
         # TODO: If it does then rename it in the command and parameter part.
         modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
         for module in modules:

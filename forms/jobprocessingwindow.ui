@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>448</width>
-    <height>500</height>
+    <height>440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>100</x>
-     <y>460</y>
+     <y>400</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -55,13 +55,13 @@
     <string>Job start time:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_3">
+  <widget class="QLabel" name="startTimeLabel">
    <property name="geometry">
     <rect>
      <x>220</x>
      <y>30</y>
-     <width>52</width>
-     <height>15</height>
+     <width>221</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
@@ -81,13 +81,13 @@
     <string>Current duration:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_5">
+  <widget class="QLabel" name="durationLabel">
    <property name="geometry">
     <rect>
      <x>220</x>
      <y>50</y>
-     <width>52</width>
-     <height>15</height>
+     <width>221</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
@@ -107,13 +107,13 @@
     <string>Jobs completed:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_7">
+  <widget class="QLabel" name="completedLabel">
    <property name="geometry">
     <rect>
      <x>220</x>
      <y>70</y>
-     <width>52</width>
-     <height>15</height>
+     <width>221</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
@@ -133,13 +133,13 @@
     <string>Jobs remaining:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_9">
+  <widget class="QLabel" name="remainingLabel">
    <property name="geometry">
     <rect>
      <x>220</x>
      <y>90</y>
-     <width>52</width>
-     <height>15</height>
+     <width>221</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
@@ -159,108 +159,33 @@
     <number>24</number>
    </property>
   </widget>
-  <widget class="QLabel" name="label_10">
+  <widget class="QLabel" name="label_18">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>160</y>
-     <width>71</width>
-     <height>16</height>
+     <y>150</y>
+     <width>52</width>
+     <height>15</height>
     </rect>
    </property>
    <property name="text">
-    <string>Core 1 Task:</string>
+    <string>Output:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_11">
+  <widget class="QPlainTextEdit" name="logText">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>180</y>
+     <y>170</y>
      <width>431</width>
-     <height>16</height>
+     <height>221</height>
     </rect>
    </property>
-   <property name="text">
-    <string>enfuse -o out.tiff *.jpg</string>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
-  </widget>
-  <widget class="QLabel" name="label_12">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>220</y>
-     <width>431</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>enfuse -o out.tiff *.jpg</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_13">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>300</y>
-     <width>431</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>enfuse -o out.tiff *.jpg</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_14">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>260</y>
-     <width>431</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>enfuse -o out.tiff *.jpg</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_15">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>200</y>
-     <width>71</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Core 2 Task:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_16">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>280</y>
-     <width>71</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Core 4 Task:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_17">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>240</y>
-     <width>71</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Core 3 Task:</string>
+   <property name="centerOnScroll">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
