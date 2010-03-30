@@ -1,8 +1,12 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from forms.Ui_MainWindow import Ui_MainWindow
+from PyQt4.QtGui import QMainWindow
+from PyQt4.QtGui import QHeaderView
+from PyQt4.QtGui import QTableWidgetItem
+from PyQt4.QtCore import QMimeData
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import QString
+from forms.ui_mainwindow import Ui_MainWindow
 from imports import Module, Parameter
-from forms.Ui_ModuleListWidget import Ui_ModuleListWidget
+from forms.ui_modulelistwidget import Ui_ModuleListWidget
 import os
 from string import replace
 
@@ -13,38 +17,65 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         # Configure individual column widths
-        self.ui.mappingsTable.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
-        self.ui.mappingsTable.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
-        self.ui.mappingsTable.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
+        self.ui.mappingsTable.horizontalHeader().setResizeMode(0,
+            QHeaderView.ResizeToContents)
+        self.ui.mappingsTable.horizontalHeader().setResizeMode(1,
+            QHeaderView.Stretch)
+        self.ui.mappingsTable.horizontalHeader().setResizeMode(2,
+            QHeaderView.ResizeToContents)
 
-        self.connect(self.ui.listWidget, SIGNAL("itemClicked(QListWidgetItem*)"), self.globalModuleListClickHandler)
-        self.connect(self.ui.projectModuleList, SIGNAL("itemClicked(QListWidgetItem*)"), self.projectModuleListClickHandler)
-        self.connect(self.ui.actionOpen_Project, SIGNAL("activated()"), self.openFileClicked)
-        self.connect(self.ui.actionSave_Project, SIGNAL("activated()"), self.saveProjectClicked)
-        self.connect(self.ui.actionExit, SIGNAL("activated()"), self.closeProject)
-        self.connect(self.ui.executeButton, SIGNAL("clicked()"), self.execute)
+        self.connect(self.ui.listWidget, \
+            SIGNAL("itemClicked(QListWidgetItem*)"), \
+            self.globalModuleListClickHandler)
+        self.connect(self.ui.projectModuleList, \
+            SIGNAL("itemClicked(QListWidgetItem*)"), \
+            self.projectModuleListClickHandler)
+        self.connect(self.ui.actionOpen_Project, \
+            SIGNAL("activated()"), \
+            self.openFileClicked)
+        self.connect(self.ui.actionSave_Project, \
+            SIGNAL("activated()"), \
+            self.saveProjectClicked)
+        self.connect(self.ui.actionExit, \
+            SIGNAL("activated()"), \
+            self.closeProject)
+        self.connect(self.ui.executeButton, \
+            SIGNAL("clicked()"), \
+            self.execute)
+
         headers = ["Symbol", "Description", "Mapping"]
         self.ui.mappingsTable.setColumnCount(len(headers))
         self.ui.mappingsTable.setHorizontalHeaderLabels(headers)
 
-        self.connect(self.ui.newGlobalModuleButton, SIGNAL("clicked()"), self.globalModuleButtonClicked)
+        self.connect(self.ui.newGlobalModuleButton, SIGNAL("clicked()"), \
+            self.globalModuleButtonClicked)
 
-        self.connect(self.ui.newProjectModuleButton, SIGNAL("clicked()"), self.projectModuleButtonClicked)
+        self.connect(self.ui.newProjectModuleButton, SIGNAL("clicked()"), \
+            self.projectModuleButtonClicked)
 
     def openFileClicked(self):
-        fileName = QFileDialog.getOpenFileName(self, "Open File", os.path.expanduser("~"), "Sched files (*)")
+        """
+        Displays a file dialog to get the filename of the file to save to
+        """
+        fileName = QFileDialog.getOpenFileName(self, "Open File",
+            os.path.expanduser("~"), "Sched files (*)")
+
         if fileName:
             self.loadProject(fileName)
 
     def execute(self):
+        """
+        Executes the current project
+        """
         from imports.ProcessHandler import ProcessHandler
         from imports.process import Process
-        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
+        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
+            self.ui.projectModuleList.count())]
         processes = []
         for module in modules:
             command = module.command
             for param in module.parameters:
-                command = replace(command, param.id, param.value)
+                command = replace(command, param.param_id, param.value)
 #            command = "sleep 5"
                 command = "sleep 5"
             processes.append(Process(command))
@@ -56,7 +87,12 @@ class MainWindow(QMainWindow):
         self.handler.start()
 
     def saveProjectClicked(self):
-        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
+        """
+        Called when the user clicks save project. Constructs the relevant XML,
+        requests a filename and writes the file
+        """
+        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
+            self.ui.projectModuleList.count())]
         from xml.dom.minidom import Document
         doc = Document()
         list = doc.createElement("moduleList")
@@ -105,7 +141,8 @@ class MainWindow(QMainWindow):
         prettyxml = doc.toprettyxml(indent="  ")
         print prettyxml
 
-        fileName = QFileDialog.getSaveFileName(self, "Save File", os.path.expanduser("~"), "Sched files (*)")
+        fileName = QFileDialog.getSaveFileName(self, "Save File", \
+            os.path.expanduser("~"), "Sched files (*)")
         # TODO: Check if the file exists, don't overwrite it
         if fileName:
             file = open(fileName, "w")
@@ -114,29 +151,40 @@ class MainWindow(QMainWindow):
 
 
     def loadProject(self, fileName):
+        """
+        Called when the user clicks load projec. Loads a file and parses it
+        """
         try:
             input = open(fileName)
             xml = input.read()
             modules = self.parseXML(xml)
-            from forms.Ui_ModuleListWidget import Ui_ModuleListWidget
+            from forms.ui_modulelistwidget import Ui_ModuleListWidget
             for module in modules:
-                ui = Ui_ModuleListWidget(module, parent = self.ui.projectModuleList)
+                ui = Ui_ModuleListWidget(module, \
+                    parent=self.ui.projectModuleList)
                 self.ui.projectModuleList.addItem(ui)
         except OSError:
             # TODO: Make an error message
             print "Can't load project."
 
     def parseXML(self, xml):
+        """
+        Parse the XML file
+        """
         from imports.ModuleXMLParser import ModuleXMLParser
         parser = ModuleXMLParser()
         return parser.parse(xml)
 
     def loadGlobals(self):
+        """
+        Load and parse the global modules into the global list
+        """
         try:
-            input = open(os.path.expanduser('~') + os.sep + ".sched/modules.xml", "r")
+            input = open(os.path.expanduser('~') + os.sep + \
+                ".sched/modules.xml", "r")
             xml = input.read()
             modules = self.parseXML(xml)
-            from forms.Ui_ModuleListWidget import Ui_ModuleListWidget
+            from forms.ui_modulelistwidget import Ui_ModuleListWidget
             for module in modules:
                 ui = Ui_ModuleListWidget(module,parent = self.ui.listWidget)
                 self.ui.listWidget.addItem(ui)
@@ -144,18 +192,21 @@ class MainWindow(QMainWindow):
             self.updateMappings()
 
         except OSError:
-            result = self.okToContinue("Error.", "~/.sched doesn't exist. This means that global modules cannot be saved. Created it?")
+            result = self.okToContinue("Error.", "~/.sched doesn't exist. " + \
+                "This means that global modules cannot be saved. Created it?")
             if result:
                 try:
                     os.mkdir(os.path.expanduser('~') + os.sep + ".sched")
                 except OSError:
                     
                     print "Error! Can't write to the home directory."
-                
-
 
     def closeProject(self):
-        result = self.okToContinue("Error.", "There are unsaved changes. Save them?")
+        """
+        Close the current project
+        """
+        result = self.okToContinue("Error.", \
+            "There are unsaved changes. Save them?")
         if result:
             # TODO: Save
             print "Write this"
@@ -163,7 +214,12 @@ class MainWindow(QMainWindow):
             self.close()
 
     def okToContinue(self, title, message):
-        reply = QMessageBox.question(self, title, message, QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+        """
+        Generic method that pops up a dialog asking if it's OK to continue with
+        the specified message
+        """
+        reply = QMessageBox.question(self, title, message, \
+            QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
         if reply == QMessageBox.Cancel:
             return False
         elif reply == QMessageBox.Yes:
@@ -178,14 +234,16 @@ class MainWindow(QMainWindow):
 
     def projectModuleButtonClicked(self):
         """
-        Shows a 'New Module' wizard that creates a local module (this project only)
+        Shows a 'New Module' wizard that creates a local module (this
+        project only)
         """
         self.showNewModuleWizard(True)
     
 
     def showNewModuleWizard(self, type):
-        from forms.NewModuleWizard import NewModuleWizard
-        self.newModuleWizard = NewModuleWizard(parent = self, local = type, callback = self.addNewModule)
+        from forms.newmodulewizard import NewModuleWizard
+        self.newModuleWizard = NewModuleWizard(parent = self, local = type, \
+            callback = self.addNewModule)
         self.newModuleWizard.show()
 
     def addNewModule(self, module, local):
@@ -201,30 +259,36 @@ class MainWindow(QMainWindow):
 
     def updateMappings(self):
         dataType = QMimeData()
-        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
+        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
+            self.ui.projectModuleList.count())]
         self.ui.mappingsTable.setSortingEnabled(False)
-        self.ui.mappingsTable.setRowCount(sum([len(x.parameters) for x in modules]) +1)
+        self.ui.mappingsTable.setRowCount(sum([len(x.parameters) for x in \
+            modules]) +1)
 
         counter = 0
         for module in modules:
             for param in module.parameters:
-                self.ui.mappingsTable.setItem(counter, 0, QTableWidgetItem(QString(param.id)))
-                self.ui.mappingsTable.setItem(counter, 1, QTableWidgetItem(QString(param.description)))
-                self.ui.mappingsTable.setItem(counter, 2, QTableWidgetItem(QString(param.value)))
+                self.ui.mappingsTable.setItem(counter, 0, \
+                    QTableWidgetItem(QString(param.param_id)))
+                self.ui.mappingsTable.setItem(counter, 1, \
+                    QTableWidgetItem(QString(param.description)))
+                self.ui.mappingsTable.setItem(counter, 2, \
+                    QTableWidgetItem(QString(param.value)))
                 counter += 1
 
         self.ui.mappingsTable.setSortingEnabled(True)
-        
     
     def globalModuleListClickHandler(self, item):
         # Check if the module being loaded redefines any current parameter
         # TODO: If it does then rename it in the command and parameter part.
-        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, self.ui.projectModuleList.count())]
+        modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
+            self.ui.projectModuleList.count())]
         for module in modules:
             for parameter in module.parameters:
                 for newParameter in item.module.parameters:
                     if parameter == newParameter:
-                        # TODO: Add the name of the module to the param name? Use a number?
+                        # TODO: Add the name of the module to the param name?
+                        # Use a number?
                         print "temp"
                         
         self.ui.projectModuleList.addItem(Ui_ModuleListWidget(item.module))

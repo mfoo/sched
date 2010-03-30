@@ -11,7 +11,7 @@ import process
 import time
 import os
 import re
-from forms.JobProcessingWindow import JobProcessingWindow
+from forms.jobprocessingwindow import JobProcessingWindow
 from threading import Thread
 from PyQt4.QtCore import QTimer
 from PyQt4.QtCore import *
@@ -26,12 +26,12 @@ class ProcessHandler:
     def __init__(self, ready = []):
         self.running = []
         self.waiting = []
-        self.outputBuffer = []
+        self.output_buffer = []
         self.ui = JobProcessingWindow()
         self.value = 0
 
         for process in ready:
-            self.addProcess(process)
+            self.add_process(process)
             
         # TODO: Make the Cancel button stop the self.timer
         
@@ -53,17 +53,17 @@ class ProcessHandler:
                 break
 
         self.timer = QTimer()
-        self.ui.connect(self.timer, SIGNAL("timeout()"), self.updateProgressBar)
+        self.ui.connect(self.timer, SIGNAL("timeout()"), self.update_progress_bar)
         self.timer.start(250)
 
-    def updateProgressBar(self):
+    def update_progress_bar(self):
         self.handler()
         self.ui.ui.progressBar.setValue(self.value)
-        for item in self.outputBuffer:
+        for item in self.output_buffer:
             self.ui.ui.logText.appendPlainText(item)
-            self.outputBuffer.remove(item)
+            self.output_buffer.remove(item)
 
-    def addProcess(self, process):
+    def add_process(self, process):
         print "Adding process. %s" % (process.command,)
         # If there are no processes running and the length of the focus process list is zero
         self.waiting.append(process)
@@ -73,7 +73,7 @@ class ProcessHandler:
         Execute the specified process
         """
         print "Executing process %s" % (process.command,)
-        self.outputBuffer.append("Executing process %s" % (process.command,))
+        self.output_buffer.append("Executing process %s" % (process.command,))
         process.process = subprocess.Popen([process.command], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 
     def handler(self):

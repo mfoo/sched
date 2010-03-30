@@ -1,17 +1,26 @@
+"""
+This class represents a single process that can be represented in the
+pipeline.
+"""
+
 class Process:
     """
     This class represents a single process that can be represented in the
     pipeline.
     """
     def __init__(self, command, prefix = None, runnable = True):
-        self.dependantProcessIDs = []
+        self.dependant_process_ids = []
         self.process = None
-        self.numRemaining = 0
+        self.num_remaining = 0
         self.prefix = prefix
         self.command = command
         self.runnable = runnable
         self.runnable = True
         
-    def addDependant(self, process):
-        self.numRemaining += 1
-        self.dependantProcessIDs.append(process)
+    def add_dependant(self, process):
+        """
+        Add a process that this process is dependant on. This process will not
+        be executed until all dependants have been executed.
+        """
+        self.num_remaining += 1
+        self.dependant_process_ids.append(process)

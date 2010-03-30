@@ -1,6 +1,6 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from forms.Ui_JobProcessingWindow import Ui_Dialog
+from forms.ui_jobprocessingwindow import Ui_Dialog
 
 class JobProcessingWindow(QDialog):
     def __init__(self, parent=None):

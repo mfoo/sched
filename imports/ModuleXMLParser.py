@@ -1,105 +1,122 @@
+"""
+Module containing the ModuleXMLParser class
+"""
+
 from xml.parsers import expat
 from Parameter import Parameter
 from Module import Module
 
 class ModuleXMLParser:
-	def __init__(self):
-		self.moduleList = []
+    """
+    ModuleXMLParser will parse a list of modules and returns it.
+    """
+    def __init__(self):
+        self.module_list = []
 
-		self.currentModule = None
-		self.currentParam = None
-		self.cdata = ""
+        self.current_module = None
+        self.current_param = None
+        self.cdata = ""
 
-		self.inDescription = False
-		self.inCommand = False
-		self.inValue = False
-		self.inId = False
+        self.in_description = False
+        self.in_command = False
+        self.in_value = False
+        self.in_id = False
 
-	def start_element(self, name, attrs):
-		if name == "module":
-			self.currentModule = Module(attrs['name'])
-		elif name == "param":
-			self.currentParam = Parameter()
-		elif name == "description":
-			self.inDescription = True
-		elif name == "value":
-			self.inValue = True
-		elif name == "command":
-			self.inCommand = True
-		elif name == "id":
-			self.inId = True
+    def start_element(self, name, attrs):
+        """
+        Function called when the start of an XML element is found
+        """
+        if name == "module":
+            self.current_module = Module(attrs['name'])
+        elif name == "param":
+            self.current_param = Parameter()
+        elif name == "description":
+            self.in_description = True
+        elif name == "value":
+            self.in_value = True
+        elif name == "command":
+            self.in_command = True
+        elif name == "id":
+            self.in_id = True
 
 
-	def end_element(self, name):
-		if name == "description":
-			self.inDescription = False
-			if self.currentParam:
-				# Parser is inside a parameter, add the description to it
-				self.currentParam.addDescription(self.cdata)
-			else:
-				self.currentModule.addDescription(self.cdata)
+    def end_element(self, name):
+        """
+        Function called when the end of an XML element is found
+        """
+        if name == "description":
+            self.in_description = False
+            if self.current_param:
+                # Parser is inside a parameter, add the description to it
+                self.current_param.add_description(self.cdata)
+            else:
+                self.current_module.add_description(self.cdata)
 
-			self.cdata = ""
-		elif name == "value":
-			self.inValue = False
-			self.currentParam.addValue(self.cdata)
-			self.cdata = ""
-		elif name == "command":
-			self.inCommand = False
-			self.currentModule.addCommand(self.cdata)
-			self.cdata = ""
-		elif name == "id":
-			self.inId = False	
-			self.currentParam.addId(self.cdata)
-			self.cdata = ""
-		elif name == "param":
-			self.currentModule.addParameter(self.currentParam)
-			self.currentParam = None
-		elif name == "module":
-			self.moduleList.append(self.currentModule)
-			
+            self.cdata = ""
+        elif name == "value":
+            self.in_value = False
+            self.current_param.add_value(self.cdata)
+            self.cdata = ""
+        elif name == "command":
+            self.in_command = False
+            self.current_module.add_command(self.cdata)
+            self.cdata = ""
+        elif name == "id":
+            self.in_id = False    
+            self.current_param.add_id(self.cdata)
+            self.cdata = ""
+        elif name == "param":
+            self.current_module.add_parameter(self.current_param)
+            self.current_param = None
+        elif name == "module":
+            self.module_list.append(self.current_module)
 
-	def char_data(self, data):
-		data = data.strip()
-		if data:
-			if self.inDescription or self.inId or self.inCommand or self.inValue:
-				self.cdata = self.cdata + data
+    def char_data(self, data):
+        """
+        Function called when some character data within an XML element is found
+        """
+        data = data.strip()
+        if data:
+            if self.in_description or self.in_id or self.in_command or self.in_value:
+                self.cdata = self.cdata + data
 
-	def parse(self, text):
+    def parse(self, text):
+        """
+        Sets up expat with the correct custom parser functions and parses text
+        """
+        parser = expat.ParserCreate()
 
-		parser = expat.ParserCreate()
+        parser.StartElementHandler = self.start_element
+        parser.EndElementHandler = self.end_element
+        parser.CharacterDataHandler = self.char_data
+        parser.Parse(text, 1)
 
-		parser.StartElementHandler = self.start_element
-		parser.EndElementHandler = self.end_element
-		parser.CharacterDataHandler = self.char_data
-		parser.Parse(text, 1)
-
-		return self.moduleList
+        return self.module_list
 
 if __name__ == "__main__":
-	parser = ModuleXMLParser()
+    _PARSER = ModuleXMLParser()
 
-	input = """<?xml version="1.0" encoding="UTF-8"?>
+    _INPUT = """<?xml version="1.0" encoding="UTF-8"?>
 <moduleList xmlns:xsi="http://w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="sched.xsd">
-	<module name="hello">
-		<description>a module</description>
-		<command>cp %0 %1</command>
-		<parameters>
-			<param>
-				<id>0</id>
-				<description>The name of the file to copy</description>
-				<value>source</value>
-			</param>
-			<param>
-				<id>1</id>
-				<description>The new name of the file</description>
-				<value>destination</value>
-			</param>
-		</parameters>
-	</module>
+    <module name="hello">
+        <description>a module</description>
+        <command>cp %0 %1</command>
+        <parameters>
+            <param>
+                <id>0</id>
+                <description>The name of the file to copy</description>
+                <value>source</value>
+            </param>
+            <param>
+                <id>1</id>
+                <description>The new name of the file</description>
+                <value>destination</value>
+            </param>
+        </parameters>
+    </module>
 </moduleList>"""
 
-	mod = parser.parse(input)	
-	for param in mod.parameters:
-		print "Parameter found. " , param.id, param.description, param.value
+    _MOD = _PARSER.parse(_INPUT)    
+    for _param in _MOD.parameters:
+        print "Parameter found. " , _param.id, _param.description, _param.value
 
