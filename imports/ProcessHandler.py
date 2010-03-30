@@ -3,6 +3,7 @@ Created on 2 Feb 2010
 
 @author: Martin Foot
 """
+
 import sys
 import signal
 import subprocess
@@ -10,83 +11,110 @@ import process
 import time
 import os
 import re
-
-startTime = time.time()
+from forms.JobProcessingWindow import JobProcessingWindow
+from threading import Thread
+from PyQt4.QtCore import QTimer
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 class ProcessHandler:
     """
     This class is used to store and edit lists of processes and handle the 
-    execution of the processs.
+    execution of the process.
     """
-    def __init__(self):
-        self.blocked = []
+    def __init__(self, ready = []):
         self.running = []
-        self.readyExposure = []
-        #self.finishedProcesses = []
-        self.readyFocus = []
-        
-        # Set the handler function as the handler for child process ending signals
-        signal.signal(signal.SIGCHLD, self.handler)
-        
+        self.waiting = []
+        self.outputBuffer = []
+        self.ui = JobProcessingWindow()
+        self.value = 0
+
+        for process in ready:
+            self.addProcess(process)
+
+#        # Set the handler function as the handler for child process ending signals
+#        signal.signal(signal.SIGCHLD, self.handler)
+
         # Set the signal handler to restart system calls that are interrupted
         signal.siginterrupt(signal.SIGCHLD, False)
+        
+    def start(self):
+        self.ui.ui.progressBar.setMinimum(0)
+        self.ui.ui.progressBar.setMaximum(len(self.waiting))
+        self.ui.ui.progressBar.setValue(0)
+        self.ui.ui.logText.appendPlainText("Starting")
 
-    def addFocus(self, process):
-        print "Adding focus process. %s" % (process.command,)
-        # If there are no waiting processes for exposure fusion
-        if(len(self.readyExposure) == 0):
-            # If there are no processes running and the length of the focus process list is zero
-            if(len(self.running) < 3) and (len(self.readyFocus) == 0):
-               # Run the focus stack.
-               self.execute(process)
-               self.running.append(process)
-               
-               
-            # Else there are already processes running so stick it on the end of the list
-            else:
-                self.readyFocus.append(process)
-        # If there are still exposure processes running, add it to ready focus.
-        else:
-            self.readyFocus.append(process)
+        self.startTime = time.time()
+        print len(self.waiting)
+        for process in self.waiting:
+#            print len(self.running)
+            print "checking"
+            print len(self.running)
+            if(len(self.running) < 4):
+                if process.runnable:
+                    print "added running"
+                    self.running.append(self.waiting.pop(self.waiting.index(process)))
+                    self.execute(process)
+#            else:
+#                print "tooo mnany"
+#                print len(self.running)
+#                break
+
+        self.timer = QTimer()
+        self.ui.connect(self.timer, SIGNAL("timeout()"), self.updateProgressBar)
+        self.timer.start(250)
+
+    def updateProgressBar(self):
+        self.handler()
+        self.ui.ui.progressBar.setValue(self.value)
+        for item in self.outputBuffer:
+            self.ui.ui.logText.appendPlainText(item)
+            self.outputBuffer.remove(item)
+
+    def addProcess(self, process):
+        print "Adding process. %s" % (process.command,)
+        # If there are no processes running and the length of the focus process list is zero
+        self.waiting.append(process)
 
     def execute(self, process):
         """
         Execute the specified process
         """
-        process.process = subprocess.Popen([process.command], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True);
+        print "Executing process %s" % (process.command,)
+        self.outputBuffer.append("Executing process %s" % (process.command,))
+        process.process = subprocess.Popen([process.command], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 
-    def handler(self, sig, frame):
-        # Find which process has ended
-        print "Process has finished. There are %d running, %d waiting exposure and %d waiting focus processes left. Duration: %d" % (len(self.running), len(self.readyExposure), len(self.readyFocus), (time.time() - startTime))
+#    def handler(self, sig, frame):
+    def handler(self):
+     #   print "Handler triggered"
+      #  # Find which process has ended
+#        self.ui.ui.logText.appendPlainText("Process has finished. There are %d running, %d waiting processes left. Current duration: %d\n" % (len(self.running), len(self.waiting), (time.time() - self.startTime)))
+#        print "Process has finished. There are %d running, %d waiting processes left. Current duration: %d" % (len(self.running), len(self.waiting), (time.time() - self.startTime))
         for process in self.running:
-            # When the camera process ends it will trigger this handler, and it has no process so ignore it.
-            #if process.process != None:
-            if process.process != None:
+            if process.process:
                 if process.process.poll() == 0 or process.process.poll() == 1:
-                # This process has ended or it failed
+                # This process has ended or failed
                     print "Found the process that has ended, removing it."
+                    self.value += 1
+                       
+                    # TODO: Stop the QTimer if finished
                     self.running.remove(process)
 
-                # If there are still exposure processes waiting, execute one
-                    if(len(self.readyExposure) != 0):
-                        print "Running new exposure fusion process"
-                        executableProcess = self.readyExposure[:1][0]
-                        self.readyFocus = self.readyFocus[1:]
-                        self.execute(executableProcess)
-                        self.running.append(executableProcess)
-                    
-                # If there aren't any waiting exposure processes, check for focus processes
-                    elif(len(self.readyFocus) != 0):
-                        print "Running new focus stacking process."
-                        executableProcess = self.readyFocus[:1][0]
-                        self.readyFocus = self.readyFocus[1:]
-                        self.execute(executableProcess)
-                        self.running.append(executableProcess)
-            else:
-                print "PROCESS WAS NULL"
-                print process.command          
+                    if(len(self.waiting) != 0):
+                        for executableProcess in self.waiting:
+    #                        executableProcess = self.waiting[:1][0]
+                            if executableProcess.runnable:
+                                self.waiting.remove(executableProcess)
+                                self.running.append(executableProcess)
+                                self.execute(executableProcess)
+                                break
+                    self.outputBuffer.append("Process has finished. There are %d running, %d waiting processes left. Current duration: %d\n" % (len(self.running), len(self.waiting), (time.time() - self.startTime)))
 
-
+                                
+        
+#        for process in self.waiting:
+#            print "    %s"% (process.command,)
+        
 # Set the movement parameters 
 # function chunks from http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks-in-python 
 # This function splits a list into smaller lists of size l
@@ -96,39 +124,21 @@ def chunks(l, n):
     for i in xrange(0, len(l), n):
         yield l[i:i+n]
 
-handler = ProcessHandler()
-#for name in xrange(1000, 1154, 2):
-#	if (name - 1000) % 12 != 0 and name != 1000:
-#		# They have reached the end, don't merge the next two
-##for x in xrange(1000, 1085):
-#		stackProcess = process.Process("convert stacked%d.tiff  -extent 4230x2050 stacked%d.tiff mask.png -gravity East -composite out%d.png" % (name, name+1, name), "merge process")
-#		handler.addFocus(stackProcess)
-#
-## The composites have been 	
-#	# Wait for the processes to have finished executing        
-#while (not len(handler.blocked) == len(handler.running) == 0):
-#    print "There are %i ready lv 1 combo processes, and %i running processes left." % (len(handler.readyFocus), len(handler.running))
-#    time.sleep(60)
 
-# They have all been combined with their neighbour, combine them across
-#amount = 0
-#for name in xrange(1002, 1150, 4):
-#	if (name - 1000) % 12 != 0:
-		# They have reached the end, don't merge the next two
-#for x in xrange(1000, 1085):
-#	if amount == 5:
-#		amount = 0
-#	else:
-#	stackProcess = process.Process("convert out%d.png  -extent 7794x2050 out%d.png mask2.png -gravity East -composite outa%d.png" % (name, name+2, name), "merge process 2")
-#handler.addFocus(stackProcess)
-#	amount += 1
-import pprint
+#handler = ProcessHandler()
+#import pprint
+
+if __name__ == "__main__":
+
+    # TODO: 
+    startTime = time.time()
+
 
 # Make a list of all files to manage
-files = [x for x in xrange(1144, 1156)]
-rows = list(chunks(files, 12))
-amount = 1
-for row in rows:
+    files = [x for x in xrange(1144, 1156)]
+    rows = list(chunks(files, 12))
+    amount = 1
+    for row in rows:
 	if amount < 20000:
 		mask = 1
 		stage = 1
@@ -165,7 +175,7 @@ for row in rows:
 			print "Next row to process:"		
 			pprint.pprint(row)
 	
-			while (not len(handler.blocked) == len(handler.running) == 0):
+			while not len(handler.running) == 0:
 				print "Waiting for row %d stage %d." % (amount, stage)
 				time.sleep(10)
 	
@@ -177,9 +187,9 @@ for row in rows:
 
 
 
-while (not len(handler.blocked) == len(handler.running) == 0):
-    print "There are %i ready lv 2 combo processes, and %i running processes left." % (len(handler.readyFocus), len(handler.running))
-    time.sleep(60)
+    while not len(handler.running) == 0:
+        print "There are %i ready lv 2 combo processes, and %i running processes left." % (len(handler.waiting), len(handler.running))
+        time.sleep(60)
 
 
 
