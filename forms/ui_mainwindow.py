@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Mar 30 21:22:45 2010
+# Created: Wed Mar 31 20:17:12 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -16,7 +16,7 @@ class Ui_MainWindow(object):
         self.centralWidget = QtGui.QWidget(MainWindow)
         self.centralWidget.setObjectName("centralWidget")
         self.label = QtGui.QLabel(self.centralWidget)
-        self.label.setGeometry(QtCore.QRect(10, 10, 151, 16))
+        self.label.setGeometry(QtCore.QRect(10, 10, 51, 16))
         self.label.setObjectName("label")
         self.executeButton = QtGui.QPushButton(self.centralWidget)
         self.executeButton.setGeometry(QtCore.QRect(740, 30, 85, 27))
@@ -69,6 +69,9 @@ class Ui_MainWindow(object):
 #        self.mappingsTable.horizontalHeader().setShowSortIndicator(False)
         self.mappingsTable.horizontalHeader().setStretchLastSection(True)
         self.mappingsTable.verticalHeader().setVisible(False)
+        self.currentContextName = QtGui.QLabel(self.centralWidget)
+        self.currentContextName.setGeometry(QtCore.QRect(60, 10, 52, 20))
+        self.currentContextName.setObjectName("currentContextName")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 830, 22))
@@ -93,8 +96,14 @@ class Ui_MainWindow(object):
         self.actionExit.setObjectName("actionExit")
         self.actionSave_Project = QtGui.QAction(MainWindow)
         self.actionSave_Project.setObjectName("actionSave_Project")
+        self.actionSave_Context = QtGui.QAction(MainWindow)
+        self.actionSave_Context.setObjectName("actionSave_Context")
+        self.actionLoad_Context = QtGui.QAction(MainWindow)
+        self.actionLoad_Context.setObjectName("actionLoad_Context")
         self.menuFile.addAction(self.actionOpen_Project)
         self.menuFile.addAction(self.actionSave_Project)
+        self.menuFile.addAction(self.actionLoad_Context)
+        self.menuFile.addAction(self.actionSave_Context)
         self.menuFile.addAction(self.actionExit)
         self.menuBar.addAction(self.menuFile.menuAction())
 
@@ -103,7 +112,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Sched Flow Editor", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Global Modules", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Context:", None, QtGui.QApplication.UnicodeUTF8))
         self.executeButton.setText(QtGui.QApplication.translate("MainWindow", "Execute", None, QtGui.QApplication.UnicodeUTF8))
         self.newProjectModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Project Module", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Project Modules", None, QtGui.QApplication.UnicodeUTF8))
@@ -112,10 +121,13 @@ class Ui_MainWindow(object):
         self.mappingsTable.horizontalHeaderItem(0).setText(QtGui.QApplication.translate("MainWindow", "Symbol", None, QtGui.QApplication.UnicodeUTF8))
         self.mappingsTable.horizontalHeaderItem(1).setText(QtGui.QApplication.translate("MainWindow", "Description", None, QtGui.QApplication.UnicodeUTF8))
         self.mappingsTable.horizontalHeaderItem(2).setText(QtGui.QApplication.translate("MainWindow", "Mapping", None, QtGui.QApplication.UnicodeUTF8))
+        self.currentContextName.setText(QtGui.QApplication.translate("MainWindow", "Current", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionOpen_Project.setText(QtGui.QApplication.translate("MainWindow", "Open Project", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen_Project.setText(QtGui.QApplication.translate("MainWindow", "Load Project", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose_Project.setText(QtGui.QApplication.translate("MainWindow", "Close Project", None, QtGui.QApplication.UnicodeUTF8))
         self.actionExit.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_Project.setText(QtGui.QApplication.translate("MainWindow", "Save Project", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave_Context.setText(QtGui.QApplication.translate("MainWindow", "Save Context", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionLoad_Context.setText(QtGui.QApplication.translate("MainWindow", "Load Context", None, QtGui.QApplication.UnicodeUTF8))
 

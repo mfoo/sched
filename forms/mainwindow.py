@@ -1,6 +1,7 @@
 from PyQt4.QtGui import QMainWindow
 from PyQt4.QtGui import QHeaderView
 from PyQt4.QtGui import QTableWidgetItem
+from PyQt4.QtGui import QFileDialog
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtCore import QString
@@ -8,6 +9,8 @@ from forms.ui_mainwindow import Ui_MainWindow
 from imports import Module, Parameter
 from forms.ui_modulelistwidget import Ui_ModuleListWidget
 import os
+import re
+from copy import deepcopy
 from string import replace
 
 class MainWindow(QMainWindow):
@@ -24,6 +27,7 @@ class MainWindow(QMainWindow):
         self.ui.mappingsTable.horizontalHeader().setResizeMode(2,
             QHeaderView.ResizeToContents)
 
+        # Connect signal handlers for UI events
         self.connect(self.ui.listWidget, \
             SIGNAL("itemClicked(QListWidgetItem*)"), \
             self.globalModuleListClickHandler)
@@ -39,26 +43,57 @@ class MainWindow(QMainWindow):
         self.connect(self.ui.actionExit, \
             SIGNAL("activated()"), \
             self.closeProject)
+        self.connect(self.ui.actionSave_Context, \
+            SIGNAL("activated()"), \
+            self.saveContextClicked)
+        self.connect(self.ui.actionLoad_Context, \
+            SIGNAL("activated()"), \
+            self.loadContextClicked)
         self.connect(self.ui.executeButton, \
             SIGNAL("clicked()"), \
             self.execute)
+        self.connect(self.ui.newGlobalModuleButton, \
+            SIGNAL("clicked()"), \
+            self.globalModuleButtonClicked)
+        self.connect(self.ui.newProjectModuleButton, \
+            SIGNAL("clicked()"), \
+            self.projectModuleButtonClicked)
+        self.connect(self.ui.commandEdit, \
+            SIGNAL("textChanged()"), \
+            self.moduleCommandTextChanged)
 
+        # Configure the column headings for the variable mappings table
         headers = ["Symbol", "Description", "Mapping"]
         self.ui.mappingsTable.setColumnCount(len(headers))
         self.ui.mappingsTable.setHorizontalHeaderLabels(headers)
+        
+        # Load the global modules
+        # TODO: Delete loadGlobals
+        # self.loadGlobals()
+        self.contextName = "test"
+        self.updateCurrentContextName()
 
-        self.connect(self.ui.newGlobalModuleButton, SIGNAL("clicked()"), \
-            self.globalModuleButtonClicked)
+    def updateCurrentContextName(self):
+        self.ui.currentContextName.setText(QString(self.contextName))
 
-        self.connect(self.ui.newProjectModuleButton, SIGNAL("clicked()"), \
-            self.projectModuleButtonClicked)
+
+    def moduleCommandTextChanged(self):
+        """
+        Called when the user changes a command.
+        Should check if the user has made a change to a module and should update
+        the internal representation of that module to reflect it.
+        """
+        # Set the text of the module to contain the text of the command edit
+        text = str(self.ui.commandEdit.toPlainText())
+        currentModule = self.ui.projectModuleList.currentItem()
+        currentModule.module.command = text
 
     def openFileClicked(self):
         """
         Displays a file dialog to get the filename of the file to save to
         """
         fileName = QFileDialog.getOpenFileName(self, "Open File",
-            os.path.expanduser("~"), "Sched files (*)")
+            os.path.expanduser("~") + "/.sched/projects/", "Sched files (*)")
 
         if fileName:
             self.loadProject(fileName)
@@ -76,7 +111,6 @@ class MainWindow(QMainWindow):
             command = module.command
             for param in module.parameters:
                 command = replace(command, param.param_id, param.value)
-#            command = "sleep 5"
                 command = "sleep 5"
             processes.append(Process(command))
             
@@ -86,11 +120,110 @@ class MainWindow(QMainWindow):
        
         self.handler.start()
 
+    def loadContextClicked(self):
+        """
+        Called when the user clicks "Load Context" from the menu. Opens a file
+        dialog to get the path then loads the context into the context pane
+        """
+        fileName = QFileDialog.getOpenFileName(self, "Open Context File",
+            os.path.expanduser("~") + "/.sched/contexts", "Sched files (*)")
+
+        if not fileName:
+            return
+        
+        try:
+            input = open(fileName, "r")
+            xml = input.read()
+            modules = self.parseXML(xml)
+            from forms.ui_modulelistwidget import Ui_ModuleListWidget
+            for module in modules:
+                ui = Ui_ModuleListWidget(module,parent = self.ui.listWidget)
+                self.ui.listWidget.addItem(ui)
+
+            self.updateMappings()
+
+            name = re.search('.*/(.*)\..*', fileName)
+            self.contextName = name.group(1)
+            self.updateCurrentContextName()
+        except OSError:
+            result = self.okToContinue("Error.", "~/.sched doesn't exist. " + \
+                "This means that global modules cannot be saved. Created it?")
+            if result:
+                try:
+                    os.mkdir(os.path.expanduser('~') + os.sep + ".sched")
+                except OSError:
+                    
+                    print "Error! Can't write to the home directory."
+                    
+    def saveContextClicked(self):
+        """
+        Called when the user requests to save the current context. Constructs
+        the relevant XML and saves to the context's file
+        """
+        modules = [self.ui.listWidget.item(x).module for x in xrange(0, \
+            self.ui.listWidget.count())]
+        from xml.dom.minidom import Document
+        doc = Document()
+        list = doc.createElement("moduleList")
+        doc.appendChild(list)
+        for module in modules:
+            mod = doc.createElement("module")
+            mod.setAttribute("name", module.name)
+            description = doc.createElement("description")
+            descriptiontext = doc.createTextNode(module.description)
+            description.appendChild(descriptiontext)
+
+            command = doc.createElement("command")
+            commandtext = doc.createTextNode(module.command)
+            command.appendChild(commandtext)
+
+            mod.appendChild(description)
+            mod.appendChild(command)
+
+            parameters = doc.createElement("parameters")
+            
+            for param in module.parameters:
+                parameter = doc.createElement("param")
+
+                id = doc.createElement("id")
+                idtext = doc.createTextNode(param.param_id)
+                id.appendChild(idtext)
+
+                descrip = doc.createElement("description")
+                descriptext = doc.createTextNode(param.description)
+                descrip.appendChild(descriptext)
+
+                value = doc.createElement("value")
+                valuetext = doc.createTextNode(param.value)
+                value.appendChild(valuetext)
+
+                parameter.appendChild(id)
+                parameter.appendChild(descrip)
+                parameter.appendChild(value)
+
+                parameters.appendChild(parameter)
+
+            mod.appendChild(parameters)
+
+            list.appendChild(mod)
+
+        prettyxml = doc.toprettyxml(indent="  ")
+
+        fileName = os.path.expanduser("~") + "/.sched/contexts/" + \
+            self.contextName
+        # TODO: Check if the file exists, don't overwrite it
+        if fileName:
+            file = open(fileName, "w")
+            file.write(prettyxml)
+            file.close()
+
     def saveProjectClicked(self):
         """
         Called when the user clicks save project. Constructs the relevant XML,
         requests a filename and writes the file
         """
+        # TODO: Add the context that the project is using
+        
         modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
             self.ui.projectModuleList.count())]
         from xml.dom.minidom import Document
@@ -117,7 +250,7 @@ class MainWindow(QMainWindow):
                 parameter = doc.createElement("param")
 
                 id = doc.createElement("id")
-                idtext = doc.createTextNode(param.id)
+                idtext = doc.createTextNode(param.param_id)
                 id.appendChild(idtext)
 
                 descrip = doc.createElement("description")
@@ -139,10 +272,9 @@ class MainWindow(QMainWindow):
             list.appendChild(mod)
 
         prettyxml = doc.toprettyxml(indent="  ")
-        print prettyxml
 
         fileName = QFileDialog.getSaveFileName(self, "Save File", \
-            os.path.expanduser("~"), "Sched files (*)")
+            os.path.expanduser("~") + ".sched/projects/", "Sched files (*)")
         # TODO: Check if the file exists, don't overwrite it
         if fileName:
             file = open(fileName, "w")
@@ -152,17 +284,23 @@ class MainWindow(QMainWindow):
 
     def loadProject(self, fileName):
         """
-        Called when the user clicks load projec. Loads a file and parses it
+        Called when the user clicks load project. Loads a file and parses it
         """
+        # TODO: When the context is in the project file, load the context as
+        # well as the modules for this project
         try:
             input = open(fileName)
             xml = input.read()
             modules = self.parseXML(xml)
             from forms.ui_modulelistwidget import Ui_ModuleListWidget
             for module in modules:
+                # Add the module to the list
                 ui = Ui_ModuleListWidget(module, \
                     parent=self.ui.projectModuleList)
                 self.ui.projectModuleList.addItem(ui)
+                
+                # Add the module's parameters to the parameter list
+            self.updateMappings()
         except OSError:
             # TODO: Make an error message
             print "Can't load project."
@@ -290,8 +428,9 @@ class MainWindow(QMainWindow):
                         # TODO: Add the name of the module to the param name?
                         # Use a number?
                         print "temp"
-                        
-        self.ui.projectModuleList.addItem(Ui_ModuleListWidget(item.module))
+
+        newmodule = deepcopy(item)                
+        self.ui.projectModuleList.addItem(Ui_ModuleListWidget(newmodule.module))
         self.updateMappings()
 
     def projectModuleListClickHandler(self, item):
