@@ -2,22 +2,31 @@ from PyQt4.QtGui import QMainWindow
 from PyQt4.QtGui import QHeaderView
 from PyQt4.QtGui import QTableWidgetItem
 from PyQt4.QtGui import QFileDialog
+
 from PyQt4.QtCore import QMimeData
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtCore import QString
-from forms.ui_mainwindow import Ui_MainWindow
-from imports import Module, Parameter
-from forms.ui_modulelistwidget import Ui_ModuleListWidget
-import os
-import re
+
 from copy import deepcopy
 from string import replace
+
+import os
+import re
+
+from forms.ui_mainwindow import Ui_MainWindow
+from forms.ui_modulelistwidget import Ui_ModuleListWidget
+
+from imports import Module, Parameter
 
 class MainWindow(QMainWindow):
     def __init__(self, parent = None):
         QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # Variable to decided whether or not something has been changed this
+        # session or not
+        self.changed = False
 
         # Configure individual column widths
         self.ui.mappingsTable.horizontalHeader().setResizeMode(0,
@@ -76,7 +85,6 @@ class MainWindow(QMainWindow):
     def updateCurrentContextName(self):
         self.ui.currentContextName.setText(QString(self.contextName))
 
-
     def moduleCommandTextChanged(self):
         """
         Called when the user changes a command.
@@ -87,6 +95,7 @@ class MainWindow(QMainWindow):
         text = str(self.ui.commandEdit.toPlainText())
         currentModule = self.ui.projectModuleList.currentItem()
         currentModule.module.command = text
+        self.changed = True
 
     def openFileClicked(self):
         """
@@ -343,12 +352,15 @@ class MainWindow(QMainWindow):
         """
         Close the current project
         """
-        result = self.okToContinue("Error.", \
-            "There are unsaved changes. Save them?")
-        if result:
-            # TODO: Save
-            print "Write this"
-            #self.saveProject()
+        if self.changed:
+            result = self.okToContinue("Error.", \
+                "There are unsaved changes. Save them?")
+            if result:
+                # TODO: Save
+                print "Write this"
+                self.saveProject()
+                self.close()
+        else:
             self.close()
 
     def okToContinue(self, title, message):
@@ -379,23 +391,38 @@ class MainWindow(QMainWindow):
     
 
     def showNewModuleWizard(self, type):
+        """
+        Shows the wizard dialog that allows creating a new module
+        """
         from forms.newmodulewizard import NewModuleWizard
         self.newModuleWizard = NewModuleWizard(parent = self, local = type, \
             callback = self.addNewModule)
         self.newModuleWizard.show()
 
     def addNewModule(self, module, local):
+        """
+        Function called by the new module wizard to add the new module to the
+        current project
+        """
+        # TODO: This should not be here, showNewModule should return a module
+        # object, not be passed a callback
+        
+        # TODO: Remove prints
         print module.command
         print module.name
         print module.description
         for param in module.parameters:
-            print param.id
+            print param.param_id
             print param.description
             print param.value
         self.ui.listWidget.addItem(Ui_ModuleListWidget(module))
         self.updateMappings()
 
     def updateMappings(self):
+        """
+        Repopulates the table of symbol -> description + mapping and is called
+        whenever a change is made to the modules
+        """
         dataType = QMimeData()
         modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
             self.ui.projectModuleList.count())]
@@ -417,6 +444,11 @@ class MainWindow(QMainWindow):
         self.ui.mappingsTable.setSortingEnabled(True)
     
     def globalModuleListClickHandler(self, item):
+        """
+        Called when the user clicks the global module list. Makes a copy of the
+        module that was clicked on and adds it to the current project as a local
+        module
+        """
         # Check if the module being loaded redefines any current parameter
         # TODO: If it does then rename it in the command and parameter part.
         modules = [self.ui.projectModuleList.item(x).module for x in xrange(0, \
@@ -429,6 +461,7 @@ class MainWindow(QMainWindow):
                         # Use a number?
                         print "temp"
 
+        self.changed = True
         newmodule = deepcopy(item)                
         self.ui.projectModuleList.addItem(Ui_ModuleListWidget(newmodule.module))
         self.updateMappings()
@@ -439,4 +472,3 @@ class MainWindow(QMainWindow):
         populate the command line box with it's command.
         """
         self.ui.commandEdit.setText(QString(item.module.command))
-
