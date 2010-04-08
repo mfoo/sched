@@ -14,7 +14,7 @@ import os
 import re
 
 from forms.ui_mainwindow import Ui_MainWindow
-from forms.ui_modulelistwidget import Ui_ModuleListWidget
+from forms.modulelistwidget import ModuleListWidgetItem
 
 from imports import Module, Parameter
 
@@ -144,9 +144,9 @@ class MainWindow(QMainWindow):
             input = open(fileName, "r")
             xml = input.read()
             modules = self.parseXML(xml)
-            from forms.ui_modulelistwidget import Ui_ModuleListWidget
+
             for module in modules:
-                ui = Ui_ModuleListWidget(module,parent = self.ui.listWidget)
+                ui = ModuleListWidgetItem(module,parent = self.ui.listWidget)
                 self.ui.listWidget.addItem(ui)
 
             self.updateMappings()
@@ -301,10 +301,10 @@ class MainWindow(QMainWindow):
             input = open(fileName)
             xml = input.read()
             modules = self.parseXML(xml)
-            from forms.ui_modulelistwidget import Ui_ModuleListWidget
+
             for module in modules:
                 # Add the module to the list
-                ui = Ui_ModuleListWidget(module, \
+                ui = ModuleListWidgetItem(module, \
                     parent=self.ui.projectModuleList)
                 self.ui.projectModuleList.addItem(ui)
                 
@@ -477,7 +477,8 @@ class MainWindow(QMainWindow):
         except AttributeError:
             pass
 
-        self.ui.projectModuleList.addItem(Ui_ModuleListWidget(newmodule))
+        self.ui.projectModuleList.addItem(ModuleListWidgetItem(newmodule, \
+            parent=self.ui.projectModuleList))
         self.updateMappings()
 
     def projectModuleListClickHandler(self, item):

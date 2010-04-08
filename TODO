@@ -4,7 +4,6 @@ TODO:
 *	Use loggers rather than printing
 *	Automatically determine number of CPU cores, e.g.
 		cat /proc/cpuinfo | grep "cpu cores" | uniq | sed 's/^.*\([0-9]\)/\1/'
-*	Look into creating a custom list view item to show module info
 *	Add simple scripting to module setup
 *	Test if each command in a module exists before allowing it to be added
 *	Fail nicely if command doesn't exist (check before execution)? - if
@@ -25,3 +24,4 @@ TODO:
 *	Write a man page
 *	Look into automatically generating documentation
 *   Make the sched UI scale properly when resized
+*   Move job processing functionality into jobprocessingwindow.py
