@@ -11,6 +11,7 @@ import process
 import time
 import os
 import re
+from math import floor
 from forms.jobprocessingwindow import JobProcessingWindow
 from threading import Thread
 from PyQt4.QtCore import QTimer
@@ -99,6 +100,7 @@ class ProcessHandler:
                         self.ui.ui.buttonBox.buttons()[0].setEnabled(True)
                         self.timer.stop()
 
-        self.ui.ui.durationLabel.setText(QString(str(time.time() - self.startTime) + " seconds"))
+        self.ui.ui.durationLabel.setText(QString(str(int(floor(time.time() -
+self.startTime))) + " seconds"))
         self.ui.ui.completedLabel.setText(QString(str(self.value)))
         self.ui.ui.remainingLabel.setText(QString(str(len(self.waiting) + len(self.running))))
