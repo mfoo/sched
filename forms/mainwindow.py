@@ -460,10 +460,24 @@ class MainWindow(QMainWindow):
                         # TODO: Add the name of the module to the param name?
                         # Use a number?
                         print "temp"
+            if module.name == item.module.name:
+                # If a copy of this module already exists then we add (n) onto
+                # the name of this module, where n is the number of modules of
+                # that type that already exist
+                try:
+                    item.module.count += 1
+                except AttributeError:
+                    item.module.count = 1
 
         self.changed = True
-        newmodule = deepcopy(item)                
-        self.ui.projectModuleList.addItem(Ui_ModuleListWidget(newmodule.module))
+        newmodule = deepcopy(item).module
+        
+        try:
+            newmodule.name = newmodule.name + " (" + str(newmodule.count) + ")"
+        except AttributeError:
+            pass
+
+        self.ui.projectModuleList.addItem(Ui_ModuleListWidget(newmodule))
         self.updateMappings()
 
     def projectModuleListClickHandler(self, item):
