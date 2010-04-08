@@ -4,26 +4,24 @@ TODO:
 *	Use loggers rather than printing
 *	Automatically determine number of CPU cores, e.g.
 		cat /proc/cpuinfo | grep "cpu cores" | uniq | sed 's/^.*\([0-9]\)/\1/'
-*	Implement XML parser for global modules as well as project modules
 *	Look into creating a custom list view item to show module info
 *	Add simple scripting to module setup
 *	Test if each command in a module exists before allowing it to be added
 *	Fail nicely if command doesn't exist (check before execution)? - if
 	somebody moves a flow to a new pc
 *	Test if a man page or --help exists for the module command so that help
-	can be shown in the ui when a module is added
+	can be shown in the ui when a module is added, perhaps check with "which"
 *	Allow a module to be run with nice
 *	Log execution times of processes
 *	Think about failure - with some processes failure will be critical, in
 	others they can be logged and ignored.
-*	Add a progress indicator when processes are running (what metric to
-	use?)
 *	Enable conditional execution module (if)
 *	Foreach module to allow one process to be executed many times with
 	different values instead of having to manually enumerate them
-*	Allow assigning aliasses to modules to make life easier
+*	Allow renaming modules to make life easier
 *	Check if a batch file has been passed as an argument. If it has, run the
 	job rather than starting the UI? What if they want to open the editor
 	on the batch file?
 *	Write a man page
 *	Look into automatically generating documentation
+*   Make the sched UI scale properly when resized
