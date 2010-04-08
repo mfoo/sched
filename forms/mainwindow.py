@@ -76,17 +76,11 @@ class MainWindow(QMainWindow):
         self.ui.mappingsTable.setColumnCount(len(headers))
         self.ui.mappingsTable.setHorizontalHeaderLabels(headers)
         
-        # Load the global modules
-        # TODO: Delete loadGlobals
-        # self.loadGlobals()
         self.contextName = "test"
         self.updateCurrentContextName()
 
     def updateCurrentContextName(self):
         self.ui.currentContextName.setText(QString(self.contextName))
-
-    def moduleCommandTextChanged(self):
-        """
         Called when the user changes a command.
         Should check if the user has made a change to a module and should update
         the internal representation of that module to reflect it.
@@ -322,32 +316,6 @@ class MainWindow(QMainWindow):
         parser = ModuleXMLParser()
         return parser.parse(xml)
 
-    def loadGlobals(self):
-        """
-        Load and parse the global modules into the global list
-        """
-        try:
-            input = open(os.path.expanduser('~') + os.sep + \
-                ".sched/modules.xml", "r")
-            xml = input.read()
-            modules = self.parseXML(xml)
-            from forms.ui_modulelistwidget import Ui_ModuleListWidget
-            for module in modules:
-                ui = Ui_ModuleListWidget(module,parent = self.ui.listWidget)
-                self.ui.listWidget.addItem(ui)
-
-            self.updateMappings()
-
-        except OSError:
-            result = self.okToContinue("Error.", "~/.sched doesn't exist. " + \
-                "This means that global modules cannot be saved. Created it?")
-            if result:
-                try:
-                    os.mkdir(os.path.expanduser('~') + os.sep + ".sched")
-                except OSError:
-                    
-                    print "Error! Can't write to the home directory."
-
     def closeProject(self):
         """
         Close the current project
@@ -356,8 +324,6 @@ class MainWindow(QMainWindow):
             result = self.okToContinue("Error.", \
                 "There are unsaved changes. Save them?")
             if result:
-                # TODO: Save
-                print "Write this"
                 self.saveProject()
                 self.close()
         else:
@@ -404,18 +370,7 @@ class MainWindow(QMainWindow):
         Function called by the new module wizard to add the new module to the
         current project
         """
-        # TODO: This should not be here, showNewModule should return a module
-        # object, not be passed a callback
-        
-        # TODO: Remove prints
-        print module.command
-        print module.name
-        print module.description
-        for param in module.parameters:
-            print param.param_id
-            print param.description
-            print param.value
-        self.ui.listWidget.addItem(Ui_ModuleListWidget(module))
+        self.ui.listWidget.addItem(ModuleListWidgetItem(module))
         self.updateMappings()
 
     def updateMappings(self):
