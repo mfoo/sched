@@ -16,11 +16,13 @@ class ModuleXMLParser:
         self.current_module = None
         self.current_param = None
         self.cdata = ""
+        self.parent = None
 
         self.in_description = False
         self.in_command = False
         self.in_value = False
         self.in_id = False
+        self.in_child = False
 
     def start_element(self, name, attrs):
         """
@@ -38,7 +40,9 @@ class ModuleXMLParser:
             self.in_command = True
         elif name == "id":
             self.in_id = True
-
+        elif name == "child":
+            self.in_child = True
+            self.parent = self.current_module
 
     def end_element(self, name):
         """
@@ -70,7 +74,12 @@ class ModuleXMLParser:
             self.current_param = None
         elif name == "module":
             self.module_list.append(self.current_module)
-
+        elif name == "child":
+            # TODO: Allow having more than one child
+            self.parent.children = self.current_module
+            self.current_module = self.parent
+            self.in_child = False
+            
     def char_data(self, data):
         """
         Function called when some character data within an XML element is found
@@ -99,6 +108,26 @@ if __name__ == "__main__":
     _INPUT = """<?xml version="1.0" encoding="UTF-8"?>
 <moduleList xmlns:xsi="http://w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="sched.xsd">
     <module name="hello">
+        <child>
+            <module name="lol">
+       
+        <description>a module</description>
+        <command>cp %0 %1</command>
+        <parameters>
+            <param>
+                <id>0</id>
+                <description>The name of the file to copy</description>
+                <value>source</value>
+            </param>
+            <param>
+                <id>1</id>
+                <description>The new name of the file</description>
+                <value>destination</value>
+            </param>
+        </parameters>
+    </module>
+
+        </child>       
         <description>a module</description>
         <command>cp %0 %1</command>
         <parameters>
@@ -116,7 +145,12 @@ if __name__ == "__main__":
     </module>
 </moduleList>"""
 
-    _MOD = _PARSER.parse(_INPUT)    
-    for _param in _MOD.parameters:
-        print "Parameter found. " , _param.id, _param.description, _param.value
+    _MOD = _PARSER.parse(_INPUT)   
+    
+    for module in _MOD:
+        if module.children:
+            print "Found child!" + module.children.name
+
+        for _param in module.parameters:
+            print "Parameter found. " , _param.description, _param.value
 
