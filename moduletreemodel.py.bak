@@ -1,0 +1,469 @@
+"""
+This module contains the ModuleTreeModel class that is the model part of the MVC
+module view and the TreeItem class which represents and individual group in the
+model.
+
+It is based on the editabletreemodel.py example in the PyQt4 documentation.
+"""
+# TODO: Copy these comments over into the moduletreemodel file
+from PyQt4 import QtCore
+from PyQt4 import QtGui
+from PyQt4.QtCore import QAbstractItemModel
+from PyQt4.QtGui import QAbstractItemView
+from PyQt4.QtCore import QModelIndex
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QMainWindow
+from forms.ui_treeview import Ui_MainWindow
+
+class TreeItem(object):
+    """
+    This class represents a node in the data structure tree.
+    """
+    def __init__(self, data, parent=None):
+        """
+        Initialise a TreeItem with the specified data and specified parent.
+        """
+        self.parentItem = parent
+        self.itemData = data
+        self.childItems = []
+
+    def child(self, row):
+        """
+        Get the child at position row of this TreeElement.
+        """
+        return self.childItems[row]
+
+    def childCount(self):
+        """
+        Return the number of children that this TreeElement has.
+        """
+        return len(self.childItems)
+
+    def childNumber(self):
+        """
+        Return the position of this TreeElement in it's parent.
+        """
+        if self.parent != None:
+            return self.parent.childItems[index(self)]
+        else:
+            # If it doesn't have a parent
+            return 0
+
+    def columnCount(self):
+        """
+        Return the number of columns that this TreeElement holds.
+        """
+        return len(self.itemData)
+
+    def data(self, column):
+        """
+        Get the data from this TreeItem at the specified column.
+        """
+        return self.itemData[column]
+
+    def insertChildren(self, position, count, columns):
+        """
+        Insert count children each with the specified number of columns at the
+        specified position into this TreeItem.
+        """
+        if position < 0 or position > self.childCount():
+            return False
+
+        for row in range(count):
+            data = [None for v in range(columns)]
+            item = TreeItem(data, self)
+            self.childItems.insert(position, item)
+
+    def insertColumns(self, position, columns):
+        """
+        Insert the specified number of columns into this TreeItem at the
+        specified position. The function is called recursively on all child
+        elements so adding a column to the parent will add it to all children.
+        """
+        if position < 0 or position > self.columnCount():
+            return False
+
+        for column in range(columns):
+            self.itemData.insert(position, None)
+
+        for child in self.childItems:
+            child.insertColumns(position, columns)
+
+    def parent(self):
+        """
+        Get the parent of this TreeItem.
+        """
+        return self.parentItem
+
+    def removeChildren(self, position, count):
+        """
+        Remove the specified number of children after the specified position.
+        """
+        if position < 0 or position + count > self.childCount():
+            return False
+
+        for row in range(count):
+            self.childItems.pop(position)
+
+        return True
+
+    def removeColumns(self, position, columns):
+        """
+        Remove the specified number of columns after the specified position.
+        Function is called recursively on all children and ignores any data that
+        they may have.
+        """
+        if position < 0 or position + columns > self.columnCount():
+           return False
+
+        for column in range(columns):
+            self.itemData.pop(position)
+
+        for child in self.childItems:
+            child.removeColumns(position, columns)
+
+        return True
+
+    def setData(self, column, value):
+        """
+        Set the data at the specified column to the specified value.
+        """
+        if column < 0 or column >= self.columnCount():
+            return False
+
+        self.itemData[column] = value
+        return True
+
+class ModuleTreeModel(QAbstractItemModel):
+    """
+    This class represents the data in the table of modules
+    """
+    def __init__(self, headers, parent=None):
+        """
+        Set up the model with the correct columns
+        """
+        QAbstractItemModel.__init__(self, parent)
+        self.rootData = headers
+        self.rootItem = TreeItem(self.rootData)
+
+    def columnCount(self, parent=QModelIndex()):
+        """
+        Get the number of columns in the model
+        """
+        # TODO: Is this unecessary? It will always be 2
+        return self.rootItem.columnCount()
+
+    def data(self, index, role):
+        """
+        Get the data from the TreeItem at the specified index
+        """
+        # TODO: Is this function ever used?
+        if not index.isValid():
+            return None
+
+        item = self.getItem(index)
+
+        return item.data(index.column())
+
+    def getItem(self, index):
+        """
+        Get the TreeItem at the specified index.
+        """
+        if index.isValid():
+            item = index.internalPointer()
+            if item:
+                return item
+
+        # If there is no data, return the root item (the column headers)
+        return self.rootItem
+
+    def headerData(self, position, orientation, role=Qt.DisplayRole):
+        """
+        Get the data from the column title at the specified position.
+        """
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self.rootItem.data(position)
+
+        return None
+
+    def index(self, row, column, parent=QModelIndex()):
+        """
+        Create an index to a specified row and column of the table model.
+        """
+        if parent.isValid() and parent.column() != 0:
+            return QModelIndex()
+
+        parentItem = self.getItem(parent)
+        childItem = parentItem.child(row)
+
+        if childItem:
+            return self.createIndex(row, column, childItem)
+        else:
+            return QModelIndex()
+
+    def insertColumns(self, position, columns, parent=QModelIndex()):
+        """
+        Insert the specified columns at the specified position in the specified
+        index.
+        """
+        # Set up the AbstractModelView to allow the structure to be changed
+        self.beginInsertColumns(parent, position, position + columns - 1)
+
+        # Perform the change
+        success = self.rootItem.insertColumns(position, columns)
+
+        # Tell the AbstractModelView to finalise changes
+        self.endInsertColumns()
+
+        return success
+
+    def insertRows(self, position, rows, parent=QModelIndex()):
+        """
+        Insert the specified rows at the specified position from the specified
+        index.
+        """
+        parentItem = self.getItem(parent)
+
+        # Set up the AbstractModelView to allow the structure to be changed
+        self.beginInsertRows(parent, position, position + rows - 1)
+
+        # Perform the change
+        success = parentItem.insertChildren(position, rows, \
+            self.rootItem.columnCount())
+
+        # Tell the AbstractModelView to finalise changes
+        self.endInsertRows()
+
+        return success
+
+    def parent(self, index):
+        """
+        Get the parent of the item at the specified index.
+        """
+        if not index.isValid():
+            return QtCore.QModelIndex()
+
+        childItem = self.getItem(index)
+        parentItem = childItem.parent()
+
+        if parentItem == self.rootItem:
+            return QtCore.QModelIndex()
+
+        return self.createIndex(parentItem.childNumber(), 0, parentItem)
+
+    def removeColumns(self, position, columns, parent=QtCore.QModelIndex()):
+        """
+        Remove the specified number of columns from the specified position from
+        the element pointed to by the parent pointer.
+        """
+        self.beginRemoveColumns(parent, position, position + columns - 1)
+        success = self.rootItem.removeColumns(position, columns)
+        self.endRemoveColumns()
+
+        if self.rootItem.columnCount() == 0:
+            self.removeRows(0, rowCount())
+
+        return success
+
+    def removeRows(self, position, rows, parent=QtCore.QModelIndex()):
+        """
+        Remove the specified number of rows from the specified position
+        from the element pointed to by the parent pointer.
+        """
+        parentItem = self.getItem(parent)
+
+        self.beginRemoveRows(parent, position, position + rows - 1)
+        success = parentItem.removeChildren(position, rows)
+        self.endRemoveRows()
+
+        return success
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        """
+        Find the number of rows in the element pointed to by the parent pointer.
+        """
+        parentItem = self.getItem(parent)
+
+        return parentItem.childCount()
+
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
+        """
+        Set the date at the index to the specified value.
+        """
+        # TODO: Is this function needed?
+        if role != QtCore.Qt.EditRole:
+            return False
+
+        item = self.getItem(index)
+        result = item.setData(index.column(), value)
+
+        if result:
+            self.dataChanged.emit(index, index)
+
+        return result
+
+    def setHeaderData(self, section,position, orientation, value, role=QtCore.Qt.EditRole):
+        """
+        Set the value of the column headed at the specified position to the
+        specified value.
+        """
+        if role != QtCore.Qt.EditRole or orientation != QtCore.Qt.Horizontal:
+            return False
+
+        result = self.rootItem.setData(section, value)
+        if result:
+            self.headerDataChanged.emit(orientation, section, section)
+
+        return result
+
+class TestWindow(QMainWindow, Ui_MainWindow):
+    def __init__(self, parent=None):
+        super(QMainWindow, self).__init__(parent)
+
+        self.setupUi(self)
+
+        headers = ["Group/Module name", "Description"]
+        model = ModuleTreeModel(headers)
+
+        model.rootItem.insertChildren(0,2, model.rootItem.columnCount())
+        model.rootItem.child(0).setData(0, "row 1 column 1")
+        model.rootItem.child(1).setData(0, "row 2 column 1")
+        model.rootItem.child(1).setData(1, "row 2 column 2")
+        print model.rootItem.child(1).itemData
+#        model.insertRows(0, 1, parent=model.index(1,0))
+#        model.rootItem.child(1).insertChildren(0,1,2)
+#        model.rootItem.child(1).child(0).setData(0, "hello")
+#        model.rootItem.child(0).itemData = ["hello", "hi"]
+
+        #model.rootItem.child(2).setData(1, "whats up")
+
+
+#       model.rootItem.setData(0,"hi")
+#        print model.rootItem.itemData
+
+
+        self.view.setModel(model)
+#        self.view.setDragEnabled(True)
+        #self.view.setDragDropMode(QAbstractItemView.InternalMove)
+        
+        for column in range(model.columnCount()):
+            self.view.resizeColumnToContents(column)
+
+ #       self.exitAction.triggered.connect(QtGui.qApp.quit)
+
+     #   self.view.selectionModel().selectionChanged.connect(self.updateActions)
+
+#       self.actionsMenu.aboutToShow.connect(self.updateActions)
+ #      self.insertRowAction.triggered.connect(self.insertRow)
+  #     self.insertColumnAction.triggered.connect(self.insertColumn)
+   #    self.removeRowAction.triggered.connect(self.removeRow)
+    #   self.removeColumnAction.triggered.connect(self.removeColumn)
+     #  self.insertChildAction.triggered.connect(self.insertChild)
+
+
+
+
+#.child(1).insertChildren(0,5,2)
+
+
+        self.updateActions()
+
+
+
+    def insertChild(self):
+        index = self.view.selectionModel().currentIndex()
+        model = self.view.model()
+
+        if model.columnCount(index) == 0:
+            if not model.insertColumn(0, index):
+                return
+
+        if not model.insertRow(0, index):
+            return
+
+        for column in range(model.columnCount(index)):
+            child = model.index(0, column, index)
+            model.setData(child, "[No data]", QtCore.Qt.EditRole)
+            if not model.headerData(column, QtCore.Qt.Horizontal).isValid():
+                model.setHeaderData(column, QtCore.Qt.Horizontal,
+                        "[No header]", QtCore.Qt.EditRole)
+
+        self.view.selectionModel().setCurrentIndex(model.index(0, 0, index),
+                QtGui.QItemSelectionModel.ClearAndSelect)
+        self.updateActions()
+
+    def insertColumn(self, parent=QtCore.QModelIndex()):
+        model = self.view.model()
+        column = self.view.selectionModel().currentIndex().column()
+
+        # Insert a column in the parent item.
+        changed = model.insertColumn(column + 1, parent)
+        if changed:
+            model.setHeaderData(column + 1, QtCore.Qt.Horizontal,
+                    "[No header]", QtCore.Qt.EditRole)
+
+        self.updateActions()
+
+        return changed
+
+    def insertRow(self):
+        index = self.view.selectionModel().currentIndex()
+        model = self.view.model()
+
+        if not model.insertRow(index.row()+1, index.parent()):
+            return
+
+        self.updateActions()
+
+        for column in range(model.columnCount(index.parent())):
+            child = model.index(index.row()+1, column, index.parent())
+            model.setData(child, "[No data]", QtCore.Qt.EditRole)
+
+    def removeColumn(self, parent=QtCore.QModelIndex()):
+        model = self.view.model()
+        column = self.view.selectionModel().currentIndex().column()
+
+        # Insert columns in each child of the parent item.
+        changed = model.removeColumn(column, parent)
+
+        if not parent.isValid() and changed:
+            self.updateActions()
+
+        return changed
+
+    def removeRow(self):
+        index = self.view.selectionModel().currentIndex()
+        model = self.view.model()
+
+        if (model.removeRow(index.row(), index.parent())):
+            self.updateActions()
+
+    def updateActions(self):
+        hasSelection = not self.view.selectionModel().selection().isEmpty()
+        self.removeRowAction.setEnabled(hasSelection)
+        self.removeColumnAction.setEnabled(hasSelection)
+
+        hasCurrent = self.view.selectionModel().currentIndex().isValid()
+        self.insertRowAction.setEnabled(hasCurrent)
+        self.insertColumnAction.setEnabled(hasCurrent)
+
+        if hasCurrent:
+            self.view.closePersistentEditor(self.view.selectionModel().currentIndex())
+
+            row = self.view.selectionModel().currentIndex().row()
+            column = self.view.selectionModel().currentIndex().column()
+            if self.view.selectionModel().currentIndex().parent().isValid():
+                self.statusBar().showMessage("Position: (%d,%d)" % (row,
+column))
+            else:
+                self.statusBar().showMessage("Position: (%d,%d) in top level" %
+(row, column))
+
+
+if __name__ == "__main__":
+    import sys
+
+    app = QtGui.QApplication(sys.argv)
+    window = TestWindow()
+    window.show()
+    sys.exit(app.exec_())
