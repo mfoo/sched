@@ -23,6 +23,7 @@ class ModuleXMLParser:
         self.in_value = False
         self.in_id = False
         self.in_child = False
+        self.in_dependency = False
 
     def start_element(self, name, attrs):
         """
@@ -30,6 +31,9 @@ class ModuleXMLParser:
         """
         if name == "module":
             self.current_module = Module(attrs['name'])
+            self.current_module.add_id(attrs['id'])
+        elif name == "dependency":
+            self.in_dependency = True
         elif name == "param":
             self.current_param = Parameter()
         elif name == "description":
@@ -56,6 +60,10 @@ class ModuleXMLParser:
             else:
                 self.current_module.add_description(self.cdata)
 
+            self.cdata = ""
+        elif name == "dependency":
+            self.current_module.dependencies.append(int(self.cdata))
+            self.in_dependency = False
             self.cdata = ""
         elif name == "value":
             self.in_value = False
@@ -86,7 +94,7 @@ class ModuleXMLParser:
         """
         data = data.strip()
         if data:
-            if self.in_description or self.in_id or self.in_command or self.in_value:
+            if self.in_description or self.in_id or self.in_command or self.in_value or self.in_dependency:
                 self.cdata = self.cdata + data
 
     def parse(self, text):

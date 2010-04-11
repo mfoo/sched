@@ -18,6 +18,8 @@ from PyQt4.QtCore import Qt
 
 from copy import deepcopy
 from string import replace
+from types import IntType
+from types import ListType
 
 import os
 import re
@@ -44,7 +46,6 @@ class DraggableListWidget(QListWidget):
 #        print self.test.name
 
     def newDropEvent(self, event):
-        print "lolevent"
         dragItem = self.currentItem()
         print str(dragItem.nameLabel.text())
         QListWidget.dropEvent(self, event)
@@ -159,13 +160,39 @@ class MainWindow(QMainWindow):
             self.ui.descriptionEdit.text())
         self.ui.treeWidget.currentItem().updateUi()
 
-
     def dependencyEditTextChanged(self, qstring):
         """
         Called when the user is editing the name of a module.
         """
-        # TODO: Implement dependencies
-        pass
+        if str(qstring) == "":
+            return
+        dependencies = None
+        try:
+            dependencies = eval(str(qstring))
+        except NameError:
+            # The string contains text
+            return
+        except SyntaxError:
+            # The string is empty
+            return
+        except TypeError:
+            # It has decimals or longs
+            return
+        
+        error = False
+        if dependencies:
+            if type(dependencies) is IntType:
+                dependencies = [dependencies]
+
+            for dependency in dependencies:
+                if type(dependency) is not IntType:
+                    # It still contains "None" or some text
+                    error = True
+            
+            if not error:
+                self.ui.treeWidget.currentItem().set_dependencies(dependencies)
+                self.ui.treeWidget.currentItem().updateUi()
+        
 #        self.ui.treeWidget.currentItem().setData(4, Qt.DisplayRole, \
  #           self.ui.dependencyEdit.text())
 
@@ -185,7 +212,8 @@ class MainWindow(QMainWindow):
         Inserts a special module (For or If) into the project.
         """
         newitem = QTreeWidgetItem()
-        newitem.setData(0, Qt.DisplayRole, 1)
+        # TODO: Fix IDs from special modules
+        newitem.setData(0, Qt.DisplayRole, QString("1"))
         newitem.setData(1, Qt.DisplayRole, QString("For"))
         newitem.setData(2, Qt.DisplayRole, QString(""))
         newitem.setData(3, Qt.DisplayRole, QString("Applies a range of parameters to a list of functions"))
@@ -263,9 +291,10 @@ class MainWindow(QMainWindow):
                 return
             
             module.command = command
-
-        for module in modules:
-            processes.append(Process(command))
+   
+            process = Process(command, module.id)
+            process.dependant_process_ids = module.dependencies
+            processes.append(process)
             
         self.handler = ProcessHandler(processes)
 
@@ -283,7 +312,7 @@ class MainWindow(QMainWindow):
 
         if not fileName:
             return
-        
+
         try:
             input = open(fileName, "r")
             xml = input.read()
@@ -322,6 +351,7 @@ class MainWindow(QMainWindow):
         for module in modules:
             mod = doc.createElement("module")
             mod.setAttribute("name", module.name)
+            mod.setAttribute("id", module.id)
             description = doc.createElement("description")
             descriptiontext = doc.createTextNode(module.description)
             description.appendChild(descriptiontext)
@@ -376,7 +406,6 @@ class MainWindow(QMainWindow):
         requests a filename and writes the file
         """
         # TODO: Add the context that the project is using
-        
 
         modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
 
@@ -389,6 +418,7 @@ class MainWindow(QMainWindow):
             print "Processing " + module.name
             mod = doc.createElement("module")
             mod.setAttribute("name", module.name)
+            mod.setAttribute("id", module.id)
             description = doc.createElement("description")
 
 #            print type(module.command + module.command + module.name)
@@ -404,7 +434,7 @@ class MainWindow(QMainWindow):
             mod.appendChild(command)
 
             parameters = doc.createElement("parameters")
-            
+
             for param in module.parameters:
                 parameter = doc.createElement("param")
 
@@ -427,9 +457,14 @@ class MainWindow(QMainWindow):
                 parameters.appendChild(parameter)
 
             mod.appendChild(parameters)
+            
+            for dependency in module.dependencies:
+                dep = doc.createElement("dependency")
+                deptext = doc.createTextNode(str(dependency))
+                dep.appendChild(deptext)
+                mod.appendChild(dep)
 
             return mod
-
 
         for module in modules:
             print module.name
@@ -583,56 +618,65 @@ class MainWindow(QMainWindow):
         module that was clicked on and adds it to the current project as a local
         module
         """
-        # Check if the module being loaded redefines any current parameter
+        # Check if the module being loaded redefines any current parameter, and
+        # find a new ID for it that isn't being used by any module in the 
+        # project
+        
         # TODO: If it does then rename it in the command and parameter part.
 
 
-
-
- #       self.ui.treeWidget.addTopLevelItem(QTreeWidgetItem(["lol"]))
-  #      self.ui.treeWidget.addTopLevelItem(QTreeWidgetItem(["lott"]))
-   #     self.ui.treeWidget.itemAt(0,0).addChild(QTreeWidgetItem(["ahah"])) 
-
-        # Get the ID from the module
-        newitem = ModuleWidgetItem(item.module)
-        #newItem.setModule(item.module)
-        newitem.updateUi()
-#        id += 1
-        self.ui.treeWidget.addTopLevelItem(newitem)
-
         modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
 
+        # Construct the new module
+        newitem = ModuleWidgetItem(item.module)
+        
+        highestId = 0
+        duplicateNameCount = 0
+        
         for module in modules:
+            # Check for a higher ID
+            if module.id > highestId:
+                highestId = module.id
+        
+            # Check for the module redefining any parameters
             for parameter in module.parameters:
                 for newParameter in newitem.parameters:
                     if parameter == newParameter:
                         # TODO: Add the name of the module to the param name?
                         # Use a number?
                         print "temp"
-            if module.name == newitem.name:
+                        
+            # Check for module name conflicts
+            pattern = re.compile(newitem.name + "( \(.+\))?")
+
+            if pattern.match(module.name):
                 # If a copy of this module already exists then we add (n) onto
                 # the name of this module, where n is the number of modules of
                 # that type that already exist
-                try:
-                    item.module.count += 1
-                except AttributeError:
-                    item.module.count = 1
+                duplicateNameCount += 1
+
+        if duplicateNameCount > 0:
+            newitem.name = newitem.name + " (" + str(duplicateNameCount) + ")"
 
         self.changed = True
-#        newmodule = deepcopy(item).module
-        
-#        try:
-#            newmodule.name = newmodule.name + " (" + str(newmodule.count) + ")"
-#        except AttributeError:
-#            pass
 
- #       self.ui.projectModuleList.addItem(ModuleListWidgetItem(newmodule, \
-#            parent=self.ui.projectModuleList))
+        highestId += 1
+
+        newitem.add_id(highestId)
+        
+        newitem.updateUi()
+
+        self.ui.treeWidget.addTopLevelItem(newitem)
+
         self.updateMappings()
 
     # the following function is from
     # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
     def which(self, program):
+        """
+        Search the os PATH variable to see if a script / program exists and that
+        it is executable
+        """
         import os
         def is_exe(fpath):
             return os.path.exists(fpath) and os.access(fpath, os.X_OK)

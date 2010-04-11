@@ -20,6 +20,8 @@ class Module():
         self.parameters = []
         self.description = ""
         self.children = None
+        self.id = 0
+        self.dependencies = []
 
     def add_name(self, name):
         """
@@ -44,3 +46,15 @@ class Module():
         Add a parameter to the module
         """
         self.parameters.append(param)
+        
+    def add_id(self, id):
+        """
+        Add an ID to the module
+        """
+        self.id = id
+
+    def add_dependency(self, dependency):
+        self.dependencies.append(dependency)
+
+    def set_dependencies(self, dependencies):
+        self.dependencies = dependencies

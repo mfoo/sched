@@ -8,8 +8,9 @@ class Process:
     This class represents a single process that can be represented in the
     pipeline.
     """
-    def __init__(self, command, prefix = None, runnable = True):
+    def __init__(self, command, id, prefix = None, runnable = True):
         self.dependant_process_ids = []
+        self.process_id = id
         self.process = None
         self.num_remaining = 0
         self.prefix = prefix
