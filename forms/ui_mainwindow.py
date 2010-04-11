@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Sat Apr 10 18:31:39 2010
+# Created: Sun Apr 11 14:30:57 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -146,11 +146,13 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Sched Flow Editor", None, QtGui.QApplication.UnicodeUTF8))
         MainWindow.setStatusTip(QtGui.QApplication.translate("MainWindow", "Run the current project", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Context:", None, QtGui.QApplication.UnicodeUTF8))
-        self.executeButton.setToolTip(QtGui.QApplication.translate("MainWindow", "hi", None, QtGui.QApplication.UnicodeUTF8))
+        self.executeButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Start the processing of these modules", None, QtGui.QApplication.UnicodeUTF8))
         self.executeButton.setText(QtGui.QApplication.translate("MainWindow", "Execute", None, QtGui.QApplication.UnicodeUTF8))
         self.newProjectModuleButton.setStatusTip(QtGui.QApplication.translate("MainWindow", "Add a new module to this project", None, QtGui.QApplication.UnicodeUTF8))
         self.newProjectModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Project Module", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The command that will be executed. Any symbol from the above list will be substituted for it\'s mapping upon execution.", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Project Modules", None, QtGui.QApplication.UnicodeUTF8))
+        self.listWidget.setToolTip(QtGui.QApplication.translate("MainWindow", "A list of modules that are available from the current loaded context", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Global Mappings", None, QtGui.QApplication.UnicodeUTF8))
         self.newGlobalModuleButton.setStatusTip(QtGui.QApplication.translate("MainWindow", "Add a new module to this context", None, QtGui.QApplication.UnicodeUTF8))
         self.newGlobalModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Context Module", None, QtGui.QApplication.UnicodeUTF8))
@@ -159,11 +161,16 @@ class Ui_MainWindow(object):
         self.mappingsTable.horizontalHeaderItem(1).setText(QtGui.QApplication.translate("MainWindow", "Description", None, QtGui.QApplication.UnicodeUTF8))
         self.mappingsTable.horizontalHeaderItem(2).setText(QtGui.QApplication.translate("MainWindow", "Mapping", None, QtGui.QApplication.UnicodeUTF8))
         self.currentContextName.setText(QtGui.QApplication.translate("MainWindow", "Current", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidget.setToolTip(QtGui.QApplication.translate("MainWindow", "A list of modules that are contained in this project", None, QtGui.QApplication.UnicodeUTF8))
+        self.specialModulesList.setToolTip(QtGui.QApplication.translate("MainWindow", "A list of available special modules", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Special Modules", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("MainWindow", "Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Command:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Description:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Dependencies:", None, QtGui.QApplication.UnicodeUTF8))
+        self.nameEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The name of the current module", None, QtGui.QApplication.UnicodeUTF8))
+        self.descriptionEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The description of the current module", None, QtGui.QApplication.UnicodeUTF8))
+        self.dependencyEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The IDs of the modules that must be executed before this module", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen_Project.setText(QtGui.QApplication.translate("MainWindow", "Load Project", None, QtGui.QApplication.UnicodeUTF8))

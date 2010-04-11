@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="toolTip">
-     <string>hi</string>
+     <string>Start the processing of these modules</string>
     </property>
     <property name="text">
      <string>Execute</string>
@@ -71,6 +71,9 @@
       <height>61</height>
      </rect>
     </property>
+    <property name="toolTip">
+     <string>The command that will be executed. Any symbol from the above list will be substituted for it's mapping upon execution.</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
@@ -93,6 +96,9 @@
       <width>131</width>
       <height>271</height>
      </rect>
+    </property>
+    <property name="toolTip">
+     <string>A list of modules that are available from the current loaded context</string>
     </property>
     <property name="dragEnabled">
      <bool>true</bool>
@@ -223,6 +229,9 @@
     <property name="acceptDrops">
      <bool>true</bool>
     </property>
+    <property name="toolTip">
+     <string>A list of modules that are contained in this project</string>
+    </property>
     <property name="dragEnabled">
      <bool>true</bool>
     </property>
@@ -246,6 +255,9 @@
       <width>131</width>
       <height>81</height>
      </rect>
+    </property>
+    <property name="toolTip">
+     <string>A list of available special modules</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -322,6 +334,9 @@
       <height>23</height>
      </rect>
     </property>
+    <property name="toolTip">
+     <string>The name of the current module</string>
+    </property>
    </widget>
    <widget class="QLineEdit" name="descriptionEdit">
     <property name="geometry">
@@ -332,6 +347,9 @@
       <height>23</height>
      </rect>
     </property>
+    <property name="toolTip">
+     <string>The description of the current module</string>
+    </property>
    </widget>
    <widget class="QLineEdit" name="dependencyEdit">
     <property name="geometry">
@@ -341,6 +359,9 @@
       <width>431</width>
       <height>23</height>
      </rect>
+    </property>
+    <property name="toolTip">
+     <string>The IDs of the modules that must be executed before this module</string>
     </property>
    </widget>
   </widget>
