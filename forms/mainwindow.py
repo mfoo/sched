@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
             return
         dependencies = None
         try:
-            dependencies = eval(str(qstring))
+            dependencies = list(eval(str(qstring)))
         except NameError:
             # The string contains text
             return
@@ -271,11 +271,11 @@ class MainWindow(QMainWindow):
             if module.command == "":
                 if self.okToContinue("Warning", "The module named " + \
                         module.name + " has no command. Continue?"):
-                
+
                     pass
                 else:
                     return
-                
+
             command = module.command
             for param in module.parameters:
                 command = replace(command, param.param_id, param.value)
@@ -287,19 +287,19 @@ class MainWindow(QMainWindow):
                     "The command " + executable[0] + " does not appear " + \
                     "to exist on the PATH.",
                     QMessageBox.Cancel)
-   
+
                 return
-            
+
             module.command = command
-   
+
             process = Process(command, module.id)
             process.dependant_process_ids = module.dependencies
             processes.append(process)
-            
+
         self.handler = ProcessHandler(processes)
 
         self.handler.ui.show()
-       
+
         self.handler.start()
 
     def loadContextClicked(self):

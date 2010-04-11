@@ -18,10 +18,10 @@ class Process:
         self.runnable = runnable
         self.runnable = True
         
-    def add_dependant(self, process):
+    def add_dependant(self, processId):
         """
         Add a process that this process is dependant on. This process will not
         be executed until all dependants have been executed.
         """
         self.num_remaining += 1
-        self.dependant_process_ids.append(process)
+        self.dependant_process_ids.append(processId)

@@ -35,19 +35,19 @@ class ProcessHandler:
             self.add_process(process)
             
         # TODO: Make the Cancel button stop the self.timer
-        
+
     def start(self):
         self.ui.ui.buttonBox.buttons()[0].setEnabled(False)
         self.ui.ui.progressBar.setMinimum(0)
         self.ui.ui.progressBar.setMaximum(len(self.waiting))
-        self.ui.ui.progressBar.setValue(0)
+        self.ui.ui.progressBar.setValue(self.value)
         self.ui.ui.logText.appendPlainText("Starting")
         self.ui.ui.startTimeLabel.setText(QString(strftime("%a, %d %b %Y %H:%M:%S", gmtime())))
         
         self.startTime = time.time()
         for process in self.waiting:
             if(len(self.running) < 4):
-                if process.runnable:
+                if process.runnable and len(process.dependant_process_ids) == 0:
                     self.running.append(self.waiting.pop(self.waiting.index(process)))
                     self.execute(process)
             else:
@@ -82,14 +82,35 @@ class ProcessHandler:
             if process.process:
                 if process.process.poll() == 0 or process.process.poll() == 1:
                     # This process has ended or failed
-                    print "Found the process that has ended, removing it."
                     self.value += 1
-
+                    print "Process " + process.command + " id " + process.process_id + " has ended and is being removed."
                     self.running.remove(process)
 
-                    if(len(self.waiting) != 0):
+                    out = "Current running processes: "
+                    for newprocess in self.running:
+                        out = out + newprocess.command + ", "
+                    
+                    print out
+
+                    out = "Current waiting processes: "
+                    for newprocess in self.waiting:
+                        out = out + newprocess.command + ", "
+
+                    print out
+                        
+                    if len(self.waiting) != 0:
+
+                        for waitingProcess in self.waiting:
+                            # See if any other processes depend on this rocess' ID and update them
+                            try:
+                                waitingProcess.dependant_process_ids.remove(int(process.process_id))
+                            except ValueError:
+                                # It doesn't depend on this process
+                                pass
+
                         for executableProcess in self.waiting:
-                            if executableProcess.runnable:
+                            print executableProcess.command + " is still waiting for " + str(executableProcess.dependant_process_ids)
+                            if executableProcess.runnable and len(executableProcess.dependant_process_ids) == 0:
                                 self.waiting.remove(executableProcess)
                                 self.running.append(executableProcess)
                                 self.execute(executableProcess)
