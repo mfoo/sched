@@ -8,7 +8,6 @@ class Module():
     Class represents a module in a project, containing a command and a list of
     parameters as well as a name and description.
     """
-    # TODO: Remove this
     def __init__(self, *args):
         if len(args) == 0:
             # No name was supplied
@@ -17,7 +16,6 @@ class Module():
             self.name = args[0]
 
         self.command = ""
-        self.parameters = []
         self.description = ""
         self.children = None
         self.id = 0
@@ -41,12 +39,6 @@ class Module():
         """
         self.command = command
 
-    def add_parameter(self, param):
-        """
-        Add a parameter to the module
-        """
-        self.parameters.append(param)
-        
     def add_id(self, id):
         """
         Add an ID to the module
