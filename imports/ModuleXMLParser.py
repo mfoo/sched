@@ -109,7 +109,7 @@ class ModuleXMLParser:
         parser.CharacterDataHandler = self.char_data
         parser.Parse(text, 1)
 
-        return self.module_list
+        return (self.module_list, self.param_list)
 
 if __name__ == "__main__":
     _PARSER = ModuleXMLParser()

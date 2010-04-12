@@ -101,6 +101,9 @@ class MainWindow(QMainWindow):
         self.connect(self.ui.newProjectModuleButton, \
             SIGNAL("clicked()"), \
             self.projectModuleButtonClicked)
+        self.connect(self.ui.deleteModuleButton, \
+            SIGNAL("clicked()"), \
+            self.deleteModuleButtonClicked)
         self.connect(self.ui.specialModulesList, \
             SIGNAL("itemClicked(QListWidgetItem*)"), \
             self.specialModulesListClicked)
@@ -143,6 +146,9 @@ class MainWindow(QMainWindow):
 
         self.ui.specialModulesList.addItem(QString("For"))
         self.ui.specialModulesList.addItem(QString("If"))
+
+        self.parameters = []
+        self.context_parameters = []
 
     def nameEditTextChanged(self, qstring):
         """
@@ -316,13 +322,14 @@ class MainWindow(QMainWindow):
         try:
             input = open(fileName, "r")
             xml = input.read()
-            modules = self.parseXML(xml)
+            modules, parameters = self.parseXML(xml)
 
             for module in modules:
                 ui = ModuleListWidgetItem(module,parent = self.ui.listWidget)
                 self.ui.listWidget.addItem(ui)
 
-            self.updateMappings()
+            self.context_parameters = parameters
+            #self.updateMappings()
 
             name = re.search('.*/(.*)\..*', fileName)
             self.contextName = name.group(1)
@@ -433,31 +440,9 @@ class MainWindow(QMainWindow):
             mod.appendChild(description)
             mod.appendChild(command)
 
-            parameters = doc.createElement("parameters")
+            return mod
 
-            for param in module.parameters:
-                parameter = doc.createElement("param")
-
-                id = doc.createElement("id")
-                idtext = doc.createTextNode(param.param_id)
-                id.appendChild(idtext)
-
-                descrip = doc.createElement("description")
-                descriptext = doc.createTextNode(param.description)
-                descrip.appendChild(descriptext)
-
-                value = doc.createElement("value")
-                valuetext = doc.createTextNode(param.value)
-                value.appendChild(valuetext)
-
-                parameter.appendChild(id)
-                parameter.appendChild(descrip)
-                parameter.appendChild(value)
-
-                parameters.appendChild(parameter)
-
-            mod.appendChild(parameters)
-            
+           
             for dependency in module.dependencies:
                 dep = doc.createElement("dependency")
                 deptext = doc.createTextNode(str(dependency))
@@ -465,6 +450,8 @@ class MainWindow(QMainWindow):
                 mod.appendChild(dep)
 
             return mod
+
+
 
         for module in modules:
             print module.name
@@ -481,8 +468,29 @@ class MainWindow(QMainWindow):
                 list.appendChild(mod)
             # If it's not a FOR or IF special module
 
-            
+        par = doc.createElement("parameters")
 
+        for param in self.parameters:
+            parameter = doc.createElement("param")
+            id = doc.createElement("id")
+            idtext = doc.createTextNode(param.param_id)
+            id.appendChild(idtext)
+
+            descrip = doc.createElement("description")
+            descriptext = doc.createTextNode(param.description)
+            descrip.appendChild(descriptext)
+
+            value = doc.createElement("value")
+            valuetext = doc.createTextNode(param.value)
+            value.appendChild(valuetext)
+
+            parameter.appendChild(id)
+            parameter.appendChild(descrip)
+            parameter.appendChild(value)
+
+            par.appendChild(parameter)
+
+        list.appendChild(par)
 
         prettyxml = doc.toprettyxml(indent="  ")
 
@@ -505,7 +513,7 @@ class MainWindow(QMainWindow):
         try:
             input = open(fileName)
             xml = input.read()
-            modules = self.parseXML(xml)
+            modules, parameters = self.parseXML(xml)
 
             for module in modules:
                 # Add the module to the list
@@ -516,8 +524,10 @@ class MainWindow(QMainWindow):
                     child.updateUi()
                     item.addChild(child)
                 self.ui.treeWidget.addTopLevelItem(item)
-                
-                # Add the module's parameters to the parameter list
+
+            # Add the parameters to the global parameter list
+            self.parameters = parameters
+            print "Found " + str(len(self.parameters)) + "params"
             self.updateMappings()
         except OSError:
             # TODO: Make an error message
@@ -556,7 +566,6 @@ class MainWindow(QMainWindow):
         elif reply == QMessageBox.Yes:
             return True
 
-
     def globalModuleButtonClicked(self):
         """
         Shows a 'New Module' wizard that creates a global module (all projects)
@@ -570,6 +579,12 @@ class MainWindow(QMainWindow):
         """
         self.showNewModuleWizard(True)
     
+    def deleteModuleButtonClicked(self):
+        """
+        Delete the currently selected module from the project. Ensure that no
+        other modules are using it's variables before deleting them
+        """
+        
 
     def showNewModuleWizard(self, type):
         """
@@ -593,22 +608,19 @@ class MainWindow(QMainWindow):
         Repopulates the table of symbol -> description + mapping and is called
         whenever a change is made to the modules
         """
-#        modules = self.ui.treeWidget.items(itemType)
         self.ui.mappingsTable.setSortingEnabled(False)
-        modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
-        self.ui.mappingsTable.setRowCount(sum([len(x.parameters) for x in \
-            modules]) +1)
+        self.ui.mappingsTable.setRowCount(len(self.parameters))
 
         counter = 0
-        for module in modules:
-            for param in module.parameters:
-                self.ui.mappingsTable.setItem(counter, 0, \
-                    QTableWidgetItem(QString(param.param_id)))
-                self.ui.mappingsTable.setItem(counter, 1, \
-                    QTableWidgetItem(QString(param.description)))
-                self.ui.mappingsTable.setItem(counter, 2, \
-                    QTableWidgetItem(QString(param.value)))
-                counter += 1
+        for param in self.parameters:
+            print "adding"
+            self.ui.mappingsTable.setItem(counter, 0, \
+                QTableWidgetItem(QString(param.param_id)))
+            self.ui.mappingsTable.setItem(counter, 1, \
+                QTableWidgetItem(QString(param.description)))
+            self.ui.mappingsTable.setItem(counter, 2, \
+                QTableWidgetItem(QString(param.value)))
+            counter += 1
 
         self.ui.mappingsTable.setSortingEnabled(True)
     
@@ -619,37 +631,92 @@ class MainWindow(QMainWindow):
         module
         """
         # Check if the module being loaded redefines any current parameter, and
-        # find a new ID for it that isn't being used by any module in the 
-        # project
-        
-        # TODO: If it does then rename it in the command and parameter part.
-
-
-        modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
+        # if it is, rename the parameter and edit the command for the module
+        # that uses it.
 
         # Construct the new module
         newitem = ModuleWidgetItem(item.module)
         
         highestId = 0
         duplicateNameCount = 0
-        
-        for module in modules:
-            # Check for a higher ID
-            if module.id > highestId:
-                highestId = module.id
-        
-            # Check for the module redefining any parameters
-            for parameter in module.parameters:
-                for newParameter in newitem.parameters:
-                    if parameter == newParameter:
-                        # TODO: Add the name of the module to the param name?
-                        # Use a number?
-                        print "temp"
-                        
-            # Check for module name conflicts
-            pattern = re.compile(newitem.name + "( \(.+\))?")
 
+#        modules = [self.ui.listWidget.item(x).module for x in xrange(0, \
+ #           self.ui.listWidget.count())]
+ 
+        modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
+
+        for module in modules:
+            # Check if any current modules have a higher ID
+            if module.id > highestId:
+                highestId = int(module.id)
+        
+        # Check for the parameters of the module redefining any parameters
+        # Loop through the parameters that are used in the context module
+        command = newitem.command
+        
+        # Strip out any words that don't begin with %
+        commands = command.split(" ")
+
+        for variable in commands:
+            if not str(variable).startswith("%"):
+                commands.remove(variable)
+
+        # Commands now contains all of the parameters used in the module command
+        # Loop through the context_params list and get the corresponding parameter
+        # objects
+        parameterObjects = []
+
+        for newcommand in commands:
+            for param in self.context_parameters:
+                if param.param_id == newcommand:
+                    parameterObjects.append(deepcopy(param))
+                
+        # Now that we have all the parameter objects relating to this module,
+        # we need to check if they have been used before or not
+
+        # Loop through all existing parameters and check if any of the commands
+        # have been redefined.
+        numDuplicates = 0
+        for parameterObject in parameterObjects:
+             
+            # Check if this module redefines this parameter
+            pattern = re.compile(parameterObject.param_id + "[0-9]*")
+            print parameterObject.param_id + "[0-9]*"
+
+
+            for existingParameter in self.parameters:
+                print "checking" + existingParameter.param_id
+                if pattern.match(existingParameter.param_id):
+                    print "duplicate found"
+                    numDuplicates += 1
+        
+            # If there were duplicates, rename this command and edit the module
+            if numDuplicates > 0:
+                newName = str(parameterObject.param_id) + str(numDuplicates)
+                print "newName is " + newName
+                print "old command is " + newitem.command
+                newitem.command = newitem.command.replace(str(parameterObject.param_id), str(newName))
+
+                print "new command is " + newitem.command
+                parameterObject.param_id = newName
+
+            numDuplicates = 0
+
+            # Add the parameter to the global parameter list
+            try:
+                self.parameters.index(parameterObject)
+            except ValueError:
+                # The parameter doesn't exist in the global parameter
+                # list so add it.
+                self.parameters.append(parameterObject)
+        
+        # Check for module name conflicts
+        pattern = re.compile(newitem.name + "( \([0-9]+\))?")
+        duplicateNameCount = 0
+        for module in modules:
+            print "matching " + module.name + " against " + newitem.name
             if pattern.match(module.name):
+                print "match"
                 # If a copy of this module already exists then we add (n) onto
                 # the name of this module, where n is the number of modules of
                 # that type that already exist

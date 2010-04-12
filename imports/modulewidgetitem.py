@@ -25,8 +25,6 @@ class ModuleWidgetItem(QTreeWidgetItem, Module):
         self.add_description(module.description)
         self.add_name(module.name)
         self.add_command(module.command)
-        for param in module.parameters:
-            self.add_parameter(param)
         for dependency in module.dependencies:
             self.add_dependency(dependency)
 
