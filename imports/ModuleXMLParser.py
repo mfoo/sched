@@ -12,6 +12,7 @@ class ModuleXMLParser:
     """
     def __init__(self):
         self.module_list = []
+        self.param_list = []
 
         self.current_module = None
         self.current_param = None
@@ -78,7 +79,7 @@ class ModuleXMLParser:
             self.current_param.add_id(self.cdata)
             self.cdata = ""
         elif name == "param":
-            self.current_module.add_parameter(self.current_param)
+            self.param_list.append(self.current_param)
             self.current_param = None
         elif name == "module":
             self.module_list.append(self.current_module)
@@ -115,41 +116,27 @@ if __name__ == "__main__":
 
     _INPUT = """<?xml version="1.0" encoding="UTF-8"?>
 <moduleList xmlns:xsi="http://w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="sched.xsd">
+    <parameters>
+        <param>
+            <id>0</id>
+            <description>The name of the file to copy</description>
+            <value>source</value>
+        </param>
+        <param>
+            <id>1</id>
+            <description>The new name of the file</description>
+            <value>destination</value>
+        </param>
+    </parameters>
     <module name="hello">
         <child>
-            <module name="lol">
-       
-        <description>a module</description>
-        <command>cp %0 %1</command>
-        <parameters>
-            <param>
-                <id>0</id>
-                <description>The name of the file to copy</description>
-                <value>source</value>
-            </param>
-            <param>
-                <id>1</id>
-                <description>The new name of the file</description>
-                <value>destination</value>
-            </param>
-        </parameters>
-    </module>
-
+            <module name="lol">       
+                <description>a module</description>
+                <command>cp %0 %1</command>
+            </module>
         </child>       
         <description>a module</description>
         <command>cp %0 %1</command>
-        <parameters>
-            <param>
-                <id>0</id>
-                <description>The name of the file to copy</description>
-                <value>source</value>
-            </param>
-            <param>
-                <id>1</id>
-                <description>The new name of the file</description>
-                <value>destination</value>
-            </param>
-        </parameters>
     </module>
 </moduleList>"""
 
