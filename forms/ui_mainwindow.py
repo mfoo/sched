@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Sun Apr 11 14:30:57 2010
-#      by: PyQt4 UI code generator 4.6
+# Created: Thu Apr 22 16:15:08 2010
+#      by: PyQt4 UI code generator 4.7
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -63,7 +63,7 @@ class Ui_MainWindow(object):
         self.mappingsTable.horizontalHeader().setCascadingSectionResizes(True)
         self.mappingsTable.horizontalHeader().setDefaultSectionSize(100)
         self.mappingsTable.horizontalHeader().setMinimumSectionSize(10)
-        
+        self.mappingsTable.horizontalHeader().setSortIndicatorShown(False)
         self.mappingsTable.horizontalHeader().setStretchLastSection(True)
         self.mappingsTable.verticalHeader().setVisible(False)
         self.currentContextName = QtGui.QLabel(self.centralWidget)
@@ -104,6 +104,9 @@ class Ui_MainWindow(object):
         self.dependencyEdit = QtGui.QLineEdit(self.centralWidget)
         self.dependencyEdit.setGeometry(QtCore.QRect(250, 560, 431, 23))
         self.dependencyEdit.setObjectName("dependencyEdit")
+        self.deleteModuleButton = QtGui.QPushButton(self.centralWidget)
+        self.deleteModuleButton.setGeometry(QtCore.QRect(690, 430, 111, 31))
+        self.deleteModuleButton.setObjectName("deleteModuleButton")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 1051, 22))
@@ -171,6 +174,7 @@ class Ui_MainWindow(object):
         self.nameEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The name of the current module", None, QtGui.QApplication.UnicodeUTF8))
         self.descriptionEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The description of the current module", None, QtGui.QApplication.UnicodeUTF8))
         self.dependencyEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The IDs of the modules that must be executed before this module", None, QtGui.QApplication.UnicodeUTF8))
+        self.deleteModuleButton.setText(QtGui.QApplication.translate("MainWindow", "Delete Module", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen_Project.setText(QtGui.QApplication.translate("MainWindow", "Load Project", None, QtGui.QApplication.UnicodeUTF8))

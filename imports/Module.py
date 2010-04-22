@@ -20,6 +20,7 @@ class Module():
         self.children = None
         self.id = 0
         self.dependencies = []
+        self.parameters = []
 
     def add_name(self, name):
         """
