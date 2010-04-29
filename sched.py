@@ -9,10 +9,4 @@ if __name__ == "__main__":
 	window = MainWindow()
 	window.show()
 
-#	from forms.modulelistwidget import ModuleListWidgetItem
-
-#        ui = ModuleListWidgetItem(window.ui.listWidget)
-#        widget.show()
-#	window.ui.listWidget.addItem(ui)
-
 	sys.exit(app.exec_())

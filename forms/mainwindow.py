@@ -30,37 +30,12 @@ from forms.modulelistwidget import ModuleListWidgetItem
 from imports import Module, Parameter
 from imports.modulewidgetitem import ModuleWidgetItem
 
-class DraggableListWidget(QListWidget):
-    def __init__(self, parent=None):
-        self.test = None
-        QListWidget.__init__(self, parent)
-        self.dropEvent = self.newDropEvent
-        self.setGeometry(QRect(10, 30, 131, 271))
-        self.setDragEnabled(True)
-        self.setDragDropMode(QAbstractItemView.DragDrop)
-        self.setObjectName("listWidget")
-
-#    def dragEnterEvent(self, event):
-#        self.test = event.source()
-#        print "dragenterevnt"
-#        print self.test.name
-
-    def newDropEvent(self, event):
-        dragItem = self.currentItem()
-        print str(dragItem.nameLabel.text())
-        QListWidget.dropEvent(self, event)
-        dragItem.generateWidget(dragItem.module.name, \
-            dragItem.module.description)
-        dragItem.widget.parent = dragItem
-        dragItem.layout.addWidget(QLabel(QString(dragItem.module.name)))
-#        self.setItemWidget(dragItem, dragItem.widget)
-
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.listWidget = DraggableListWidget(self.ui.centralWidget)
+
         # Variable to decided whether or not something has been changed this
         # session or not
         self.changed = False
@@ -74,7 +49,7 @@ class MainWindow(QMainWindow):
             QHeaderView.ResizeToContents)
 
         # Connect signal handlers for UI events
-        self.connect(self.ui.listWidget, \
+        self.connect(self.ui.contextModuleList, \
             SIGNAL("itemClicked(QListWidgetItem*)"), \
             self.globalModuleListClickHandler)
         self.connect(self.ui.actionOpen_Project, \
@@ -110,9 +85,9 @@ class MainWindow(QMainWindow):
         self.connect(self.ui.commandEdit, \
             SIGNAL("textChanged()"), \
             self.moduleCommandTextChanged)
-        self.connect(self.ui.treeWidget, \
+        self.connect(self.ui.moduleList, \
             SIGNAL("itemClicked(QTreeWidgetItem*, int)"), \
-            self.treeWidgetItemClicked)
+            self.moduleListItemClicked)
         self.connect(self.ui.nameEdit, \
             SIGNAL("textChanged(const QString&)"),
             self.nameEditTextChanged)
@@ -123,24 +98,6 @@ class MainWindow(QMainWindow):
             SIGNAL("textChanged(const QString&)"),
             self.dependencyEditTextChanged)
 
-        # Configure the column headings for the variable mappings table
-        headers = ["Symbol", "Description", "Mapping"]
-        self.ui.mappingsTable.setColumnCount(len(headers))
-        self.ui.mappingsTable.setHorizontalHeaderLabels(headers)
-
-        self.ui.listWidget.setAcceptDrops(True)
-        self.ui.listWidget.setDragEnabled(True)
-        self.ui.listWidget.setDragDropMode(QAbstractItemView.InternalMove)
-
-        # Set up the header for the module list
-        treeWidgetHeaderList = QStringList()
-        treeWidgetHeaderList.append("ID")
-        treeWidgetHeaderList.append("Name")
-        treeWidgetHeaderList.append("Command")
-        treeWidgetHeaderList.append("Description")
-        treeWidgetHeaderList.append("Dependencies")
-
-        self.ui.treeWidget.setHeaderLabels(treeWidgetHeaderList)
         self.contextName = "None"
         self.updateCurrentContextName()
 
@@ -155,16 +112,16 @@ class MainWindow(QMainWindow):
         Called when the user is editing the name of a module.
         """
         # TODO: Check that this doesn't have the same name as another module
-        self.ui.treeWidget.currentItem().add_name(self.ui.nameEdit.text())
-        self.ui.treeWidget.currentItem().updateUi()
+        self.ui.moduleList.currentItem().add_name(self.ui.nameEdit.text())
+        self.ui.moduleList.currentItem().updateUi()
 
     def descriptionEditTextChanged(self, qstring):
         """
         Called when the user is editing the description of a module.
         """
-        self.ui.treeWidget.currentItem().add_description( \
+        self.ui.moduleList.currentItem().add_description( \
             self.ui.descriptionEdit.text())
-        self.ui.treeWidget.currentItem().updateUi()
+        self.ui.moduleList.currentItem().updateUi()
 
     def dependencyEditTextChanged(self, qstring):
         """
@@ -196,14 +153,14 @@ class MainWindow(QMainWindow):
                     error = True
             
             if not error:
-                self.ui.treeWidget.currentItem().set_dependencies(dependencies)
-                self.ui.treeWidget.currentItem().updateUi()
+                self.ui.moduleList.currentItem().set_dependencies(dependencies)
+                self.ui.moduleList.currentItem().updateUi()
         
 #        self.ui.treeWidget.currentItem().setData(4, Qt.DisplayRole, \
  #           self.ui.dependencyEdit.text())
 
 
-    def treeWidgetItemClicked(self, item, columnNo):
+    def moduleListItemClicked(self, item, columnNo):
         """
         Called when a module is clicked. Populates the text entry boxes with
         module information so that it can be easily edited.
@@ -224,7 +181,7 @@ class MainWindow(QMainWindow):
         newitem.setData(2, Qt.DisplayRole, QString(""))
         newitem.setData(3, Qt.DisplayRole, QString("Applies a range of parameters to a list of functions"))
         newitem.setData(4, Qt.DisplayRole, QString("None"))
-        self.ui.treeWidget.addTopLevelItem(newitem)
+        self.ui.moduleList.addTopLevelItem(newitem)
 
     def updateCurrentContextName(self):
         self.ui.currentContextName.setText(QString(self.contextName))
@@ -236,13 +193,11 @@ class MainWindow(QMainWindow):
         the internal representation of that module to reflect it.
         """
         # Set the text of the module to contain the text of the command edit
-        self.ui.treeWidget.currentItem().add_command( \
+        self.ui.moduleList.currentItem().add_command( \
             str(self.ui.commandEdit.toPlainText()))
         
-        self.ui.treeWidget.currentItem().updateUi()
+        self.ui.moduleList.currentItem().updateUi()
 
-#        currentModule = self.ui.treeWidget.currentItem()
-#        currentModule.module.command = text
         self.changed = True
 
     def openFileClicked(self):
@@ -262,7 +217,7 @@ class MainWindow(QMainWindow):
         from imports.ProcessHandler import ProcessHandler
         from imports.process import Process
 
-        modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
+        modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
         processes = []
 
         # Loop through the modules, check if they are special modules
@@ -270,9 +225,6 @@ class MainWindow(QMainWindow):
         # E.g. IF modules should have a condition.
         # Also check if the command exists before trying to execute it
         for module in modules:
-            # TODO: Mark a module as existing if it has been found so not all of
-            # them need to be checked?
-            # TODO: Take into account "nice" commands
             # TODO: Check criteria for FOR and IF modules
             if module.command == "":
                 if self.okToContinue("Warning", "The module named " + \
@@ -325,8 +277,9 @@ class MainWindow(QMainWindow):
             modules, parameters = self.parseXML(xml)
 
             for module in modules:
-                ui = ModuleListWidgetItem(module,parent = self.ui.listWidget)
-                self.ui.listWidget.addItem(ui)
+
+                ui = ModuleListWidgetItem(module,parent = self.ui.contextModuleList)
+                self.ui.contextModuleList.addItem(ui)
 
             self.context_parameters = parameters
             #self.updateMappings()
@@ -349,8 +302,8 @@ class MainWindow(QMainWindow):
         Called when the user requests to save the current context. Constructs
         the relevant XML and saves to the context's file
         """
-        modules = [self.ui.listWidget.item(x).module for x in xrange(0, \
-            self.ui.listWidget.count())]
+        modules = [self.ui.contextModuleList.item(x).module for x in xrange(0, \
+            self.ui.contextModuleList.count())]
         from xml.dom.minidom import Document
         doc = Document()
         list = doc.createElement("moduleList")
@@ -414,7 +367,7 @@ class MainWindow(QMainWindow):
         """
         # TODO: Add the context that the project is using
 
-        modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
+        modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
 
         from xml.dom.minidom import Document
         doc = Document()
@@ -523,7 +476,7 @@ class MainWindow(QMainWindow):
                     child = ModuleWidgetItem(module.children)
                     child.updateUi()
                     item.addChild(child)
-                self.ui.treeWidget.addTopLevelItem(item)
+                self.ui.moduleList.addTopLevelItem(item)
 
             # Add the parameters to the global parameter list
             self.parameters = parameters
@@ -600,7 +553,7 @@ class MainWindow(QMainWindow):
         Function called by the new module wizard to add the new module to the
         current project
         """
-        self.ui.listWidget.addItem(ModuleListWidgetItem(module))
+        self.ui.contextModuleList.addItem(ModuleListWidgetItem(module))
         self.updateMappings()
 
     def updateMappings(self):
@@ -640,10 +593,10 @@ class MainWindow(QMainWindow):
         highestId = 0
         duplicateNameCount = 0
 
-#        modules = [self.ui.listWidget.item(x).module for x in xrange(0, \
- #           self.ui.listWidget.count())]
+#        modules = [self.ui.contextModuleList.item(x).module for x in xrange(0, \
+ #           self.ui.contextModuleList.count())]
  
-        modules = self.ui.treeWidget.findItems("*", Qt.MatchWildcard)
+        modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
 
         for module in modules:
             # Check if any current modules have a higher ID
@@ -733,7 +686,7 @@ class MainWindow(QMainWindow):
         
         newitem.updateUi()
 
-        self.ui.treeWidget.addTopLevelItem(newitem)
+        self.ui.moduleList.addTopLevelItem(newitem)
 
         self.updateMappings()
 
