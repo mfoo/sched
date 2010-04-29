@@ -155,10 +155,6 @@ class MainWindow(QMainWindow):
             if not error:
                 self.ui.moduleList.currentItem().set_dependencies(dependencies)
                 self.ui.moduleList.currentItem().updateUi()
-        
-#        self.ui.treeWidget.currentItem().setData(4, Qt.DisplayRole, \
- #           self.ui.dependencyEdit.text())
-
 
     def moduleListItemClicked(self, item, columnNo):
         """
@@ -282,7 +278,6 @@ class MainWindow(QMainWindow):
                 self.ui.contextModuleList.addItem(ui)
 
             self.context_parameters = parameters
-            #self.updateMappings()
 
             name = re.search('.*/(.*)\..*', fileName)
             self.contextName = name.group(1)
@@ -308,10 +303,13 @@ class MainWindow(QMainWindow):
         doc = Document()
         list = doc.createElement("moduleList")
         doc.appendChild(list)
+        parameters = doc.createElement("parameters")
+
         for module in modules:
             mod = doc.createElement("module")
             mod.setAttribute("name", module.name)
             mod.setAttribute("id", module.id)
+
             description = doc.createElement("description")
             descriptiontext = doc.createTextNode(module.description)
             description.appendChild(descriptiontext)
@@ -323,8 +321,6 @@ class MainWindow(QMainWindow):
             mod.appendChild(description)
             mod.appendChild(command)
 
-            parameters = doc.createElement("parameters")
-            
             for param in module.parameters:
                 parameter = doc.createElement("param")
 
@@ -346,10 +342,8 @@ class MainWindow(QMainWindow):
 
                 parameters.appendChild(parameter)
 
-            mod.appendChild(parameters)
-
             list.appendChild(mod)
-
+        list.appendChild(parameters)
         prettyxml = doc.toprettyxml(indent="  ")
 
         fileName = os.path.expanduser("~") + "/.sched/contexts/" + \
@@ -536,8 +530,7 @@ class MainWindow(QMainWindow):
         """
         Delete the currently selected module from the project. Ensure that no
         other modules are using it's variables before deleting them
-        """
-        
+        """        
 
     def showNewModuleWizard(self, type):
         """
@@ -584,8 +577,9 @@ class MainWindow(QMainWindow):
         module
         """
         # Check if the module being loaded redefines any current parameter, and
-        # if it is, rename the parameter and edit the command for the module
+        # if it is, renameeter and edit the command for the module
         # that uses it.
+        print item.module.id
 
         # Construct the new module
         newitem = ModuleWidgetItem(item.module)
