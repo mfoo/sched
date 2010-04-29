@@ -367,6 +367,7 @@ class MainWindow(QMainWindow):
         doc = Document()
         list = doc.createElement("moduleList")
         doc.appendChild(list)
+        par = doc.createElement("parameters")
 
         def parseModule(module):
             print "Processing " + module.name
@@ -375,7 +376,6 @@ class MainWindow(QMainWindow):
             mod.setAttribute("id", module.id)
             description = doc.createElement("description")
 
-#            print type(module.command + module.command + module.name)
             descriptiontext = doc.createTextNode(str(module.description))
             description.appendChild(descriptiontext)
 
@@ -411,11 +411,10 @@ class MainWindow(QMainWindow):
                 child = parseModule(module.child(0))
                 childnode.appendChild(child)
                 mod.appendChild(childnode)
-                #mod.appendChild(child)
                 list.appendChild(mod)
             # If it's not a FOR or IF special module
 
-        par = doc.createElement("parameters")
+
 
         for param in self.parameters:
             parameter = doc.createElement("param")
