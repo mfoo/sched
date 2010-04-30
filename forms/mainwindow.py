@@ -448,7 +448,6 @@ class MainWindow(QMainWindow):
             file.write(prettyxml)
             file.close()
 
-
     def loadProject(self, fileName):
         """
         Called when the user clicks load project. Loads a file and parses it
@@ -527,9 +526,47 @@ class MainWindow(QMainWindow):
     
     def deleteModuleButtonClicked(self):
         """
-        Delete the currently selected module from the project. Ensure that no
-        other modules are using it's variables before deleting them
-        """        
+        Delete the currently selected module from the project. This method only
+        deletes parameters that no other modules are using. It searches the
+        module's command to find any variable names then checks if any other
+        modules use those variable names.
+        """
+        toDelete = self.ui.moduleList.currentItem()
+
+        # Find all of the variables used by this module
+        variables = toDelete.command.split(" ")
+
+        # Remove anything that doesn't start with %
+        for variable in variables:
+            if not variable.startswith("%"):
+                variables.remove(variable)
+        modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
+
+        for variable in variables:
+           found = False
+           # For each variable we must search all the other modules to see if
+           # they define it.
+           for module in modules:
+               if module is not toDelete:
+                   # Get the module's variables
+                   modVariables = module.command.split(" ")
+                   for var in modVariables:
+                       if not var.startswith("%"):
+                           modVariables.remove(var)
+                       else:
+                           if variables.count(var) != 0:
+                               found = True
+                               break
+
+           # If no other module defines it, remove it
+           if found == False:
+               # Find the row in the table that it is
+               items = self.ui.mappingsTable.items(QMimeData())
+               for item in items:
+                   if str(item.data(0)) == variable:
+                       self.ui.mappingsTable.removeRow( \
+                           self.ui.mappingsTable.row())
+                       self.updateMappings()
 
     def showNewModuleWizard(self, type):
         """
