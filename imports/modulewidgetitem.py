@@ -29,12 +29,11 @@ class ModuleWidgetItem(QTreeWidgetItem, Module):
             self.add_dependency(dependency)
 
     def updateUi(self):
-        # TODO: Implement IDs
         self.setData(0, Qt.DisplayRole, QString(str(self.id)))
         self.setData(1, Qt.DisplayRole, QString(self.name))
         self.setData(2, Qt.DisplayRole, QString(self.command))
         self.setData(3, Qt.DisplayRole, QString(self.description))
-        # TODO: Allow dependencies
+
         dependencyString = QString()
         if len(self.dependencies) == 0:
             dependencyString = QString("None")

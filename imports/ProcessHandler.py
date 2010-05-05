@@ -33,8 +33,6 @@ class ProcessHandler:
 
         for process in ready:
             self.add_process(process)
-            
-        # TODO: Make the Cancel button stop the self.timer
 
     def start(self):
         self.ui.ui.buttonBox.buttons()[0].setEnabled(False)

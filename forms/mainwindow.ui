@@ -30,32 +30,6 @@
           <property name="sizeConstraint">
            <enum>QLayout::SetMinimumSize</enum>
           </property>
-          <item>
-           <widget class="QLabel" name="specialModulesLabel">
-            <property name="text">
-             <string>Special Modules</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QListWidget" name="specialModulesList">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>A list of available special modules</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
         <item>
@@ -251,21 +225,6 @@
               </attribute>
               <attribute name="headerMinimumSectionSize">
                <number>50</number>
-              </attribute>
-              <attribute name="headerStretchLastSection">
-               <bool>true</bool>
-              </attribute>
-              <attribute name="headerCascadingSectionResizes">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="headerDefaultSectionSize">
-               <number>100</number>
-              </attribute>
-              <attribute name="headerMinimumSectionSize">
-               <number>50</number>
-              </attribute>
-              <attribute name="headerHighlightSections">
-               <bool>true</bool>
               </attribute>
               <attribute name="headerStretchLastSection">
                <bool>true</bool>

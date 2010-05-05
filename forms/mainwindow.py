@@ -79,9 +79,6 @@ class MainWindow(QMainWindow):
         self.connect(self.ui.deleteModuleButton, \
             SIGNAL("clicked()"), \
             self.deleteModuleButtonClicked)
-        self.connect(self.ui.specialModulesList, \
-            SIGNAL("itemClicked(QListWidgetItem*)"), \
-            self.specialModulesListClicked)
         self.connect(self.ui.commandEdit, \
             SIGNAL("textChanged()"), \
             self.moduleCommandTextChanged)
@@ -101,9 +98,6 @@ class MainWindow(QMainWindow):
         self.contextName = "None"
         self.updateCurrentContextName()
 
-        self.ui.specialModulesList.addItem(QString("For"))
-        self.ui.specialModulesList.addItem(QString("If"))
-
         self.parameters = []
         self.context_parameters = []
 
@@ -111,7 +105,6 @@ class MainWindow(QMainWindow):
         """
         Called when the user is editing the name of a module.
         """
-        # TODO: Check that this doesn't have the same name as another module
         self.ui.moduleList.currentItem().add_name(self.ui.nameEdit.text())
         self.ui.moduleList.currentItem().updateUi()
 
@@ -171,7 +164,6 @@ class MainWindow(QMainWindow):
         Inserts a special module (For or If) into the project.
         """
         newitem = QTreeWidgetItem()
-        # TODO: Fix IDs from special modules
         newitem.setData(0, Qt.DisplayRole, QString("1"))
         newitem.setData(1, Qt.DisplayRole, QString("For"))
         newitem.setData(2, Qt.DisplayRole, QString(""))

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'forms/mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Apr 29 22:40:51 2010
+# Created: Wed May  5 01:27:40 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -25,18 +25,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_6 = QtGui.QVBoxLayout()
         self.verticalLayout_6.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.specialModulesLabel = QtGui.QLabel(self.centralWidget)
-        self.specialModulesLabel.setObjectName("specialModulesLabel")
-        self.verticalLayout_6.addWidget(self.specialModulesLabel)
-        self.specialModulesList = QtGui.QListWidget(self.centralWidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.specialModulesList.sizePolicy().hasHeightForWidth())
-        self.specialModulesList.setSizePolicy(sizePolicy)
-        self.specialModulesList.setMaximumSize(QtCore.QSize(150, 60))
-        self.specialModulesList.setObjectName("specialModulesList")
-        self.verticalLayout_6.addWidget(self.specialModulesList)
         self.verticalLayout_2.addLayout(self.verticalLayout_6)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
@@ -237,8 +225,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Sched Flow Editor", None, QtGui.QApplication.UnicodeUTF8))
         MainWindow.setStatusTip(QtGui.QApplication.translate("MainWindow", "Run the current project", None, QtGui.QApplication.UnicodeUTF8))
-        self.specialModulesLabel.setText(QtGui.QApplication.translate("MainWindow", "Special Modules", None, QtGui.QApplication.UnicodeUTF8))
-        self.specialModulesList.setToolTip(QtGui.QApplication.translate("MainWindow", "A list of available special modules", None, QtGui.QApplication.UnicodeUTF8))
         self.contextLabel.setText(QtGui.QApplication.translate("MainWindow", "Context:", None, QtGui.QApplication.UnicodeUTF8))
         self.currentContextName.setText(QtGui.QApplication.translate("MainWindow", "None", None, QtGui.QApplication.UnicodeUTF8))
         self.contextModuleList.setToolTip(QtGui.QApplication.translate("MainWindow", "A list of modules that are available from the current loaded context", None, QtGui.QApplication.UnicodeUTF8))
