@@ -23,6 +23,7 @@ from types import ListType
 
 import os
 import re
+import string
 
 from forms.ui_mainwindow import Ui_MainWindow
 from forms.modulelistwidget import ModuleListWidgetItem
@@ -108,12 +109,16 @@ class MainWindow(QMainWindow):
 
 
     def mappingChanged(self, row, column):
-        self.parameters[row].param_id = str(self.ui.mappingsTable.item(row, \
-            0).text())
-        self.parameters[row].description = str(self.ui.mappingsTable.item(row, \
-            1).text())
-        self.parameters[row].value= str(self.ui.mappingsTable.item(row, \
-            2).text())
+        try:
+            self.parameters[row].param_id = str(self.ui.mappingsTable.item(row, \
+                0).text())
+            self.parameters[row].description = str(self.ui.mappingsTable.item(row, \
+                1).text())
+            self.parameters[row].value = str(self.ui.mappingsTable.item(row, \
+                2).text())
+        except AttributeError:
+            # This will get thrown on first entry
+            pass
      
 
     def nameEditTextChanged(self, qstring):
@@ -542,42 +547,55 @@ class MainWindow(QMainWindow):
         module's command to find any variable names then checks if any other
         modules use those variable names.
         """
+        print "HI"
+
         toDelete = self.ui.moduleList.currentItem()
 
         # Find all of the variables used by this module
-        variables = toDelete.command.split(" ")
+        variables = []
 
         # Remove anything that doesn't start with %
-        for variable in variables:
-            if not variable.startswith("%"):
-                variables.remove(variable)
+        for parameter in self.parameters:
+            print "lol param found"
+            temp = string.replace(toDelete.command, parameter.param_id,
+                    parameter.value)
+
+            if toDelete.command == temp:
+                pass
+            else:
+                print "match"
+                # The module uses this parameter, keep it
+                variables.append(parameter)
+
+        # Get a list of all modules
         modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
 
+        # for each variable that the deleting module uses, check if it's used
+        # elsewhere or not
+        found = False
         for variable in variables:
-           found = False
-           # For each variable we must search all the other modules to see if
-           # they define it.
-           for module in modules:
-               if module is not toDelete:
-                   # Get the module's variables
-                   modVariables = module.command.split(" ")
-                   for var in modVariables:
-                       if not var.startswith("%"):
-                           modVariables.remove(var)
-                       else:
-                           if variables.count(var) != 0:
-                               found = True
-                               break
+            print "investigating " + str(variable.param_id)
+            # For each variable we must search all the other modules to see if
+            # they define it.
+            for module in modules:
+                if module is not toDelete:
+                    print "found other module"
+                    temp = string.replace(module.command, variable.param_id,
+                        variable.value)
 
-           # If no other module defines it, remove it
-           if found == False:
-               # Find the row in the table that it is
-               items = self.ui.mappingsTable.items(QMimeData())
-               for item in items:
-                   if str(item.data(0)) == variable:
-                       self.ui.mappingsTable.removeRow( \
-                           self.ui.mappingsTable.row())
-                       self.updateMappings()
+                    if temp != module.command:
+                        print "something uses it"
+                        # The module uses this variable
+                        found = True
+
+            # If no other module defines it, remove it
+            if found == False:
+                print "nothing uses it"
+                # Find the row in the table that it is
+                self.parameters.remove(variable)
+                self.updateMappings()
+        if found == False:
+            self.ui.moduleList.removeItemWidget(self.ui.moduleList.currentItem(),0)
 
     def showNewModuleWizard(self, type):
         """
