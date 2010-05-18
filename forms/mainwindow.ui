@@ -161,6 +161,21 @@
             <attribute name="verticalHeaderVisible">
              <bool>false</bool>
             </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="horizontalHeaderCascadingSectionResizes">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="horizontalHeaderMinimumSectionSize">
+             <number>10</number>
+            </attribute>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>100</number>
+            </attribute>
             <column>
              <property name="text">
               <string>Symbol</string>
@@ -229,6 +244,21 @@
               <attribute name="headerStretchLastSection">
                <bool>true</bool>
               </attribute>
+              <attribute name="headerCascadingSectionResizes">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="headerDefaultSectionSize">
+               <number>100</number>
+              </attribute>
+              <attribute name="headerMinimumSectionSize">
+               <number>50</number>
+              </attribute>
+              <attribute name="headerHighlightSections">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="headerStretchLastSection">
+               <bool>true</bool>
+              </attribute>
               <column>
                <property name="text">
                 <string>ID</string>
@@ -285,7 +315,7 @@
                <string>Add a new module to this project</string>
               </property>
               <property name="text">
-               <string>New Project Module</string>
+               <string>New Module</string>
               </property>
              </widget>
             </item>
@@ -419,7 +449,7 @@
      <x>0</x>
      <y>0</y>
      <width>1123</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

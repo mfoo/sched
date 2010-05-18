@@ -94,12 +94,27 @@ class MainWindow(QMainWindow):
         self.connect(self.ui.dependencyEdit, \
             SIGNAL("textChanged(const QString&)"),
             self.dependencyEditTextChanged)
+        self.connect(self.ui.mappingsTable, \
+            SIGNAL("cellChanged(int, int)"), \
+            self.mappingChanged)
 
         self.contextName = "None"
         self.updateCurrentContextName()
 
         self.parameters = []
         self.context_parameters = []
+
+        # Override the default cell changed behaviour for the mappings table
+
+
+    def mappingChanged(self, row, column):
+        self.parameters[row].param_id = str(self.ui.mappingsTable.item(row, \
+            0).text())
+        self.parameters[row].description = str(self.ui.mappingsTable.item(row, \
+            1).text())
+        self.parameters[row].value= str(self.ui.mappingsTable.item(row, \
+            2).text())
+     
 
     def nameEditTextChanged(self, qstring):
         """
@@ -188,6 +203,8 @@ class MainWindow(QMainWindow):
 
         self.changed = True
 
+        print str(self.ui.commandEdit.toPlainText())
+
     def openFileClicked(self):
         """
         Displays a file dialog to get the filename of the file to save to
@@ -223,8 +240,10 @@ class MainWindow(QMainWindow):
                     return
 
             command = module.command
-            for param in module.parameters:
-                command = replace(command, param.param_id, param.value)
+#            for param in module.parameters:
+#                command = replace(command, param.param_id, param.value)
+            for parameter in self.parameters:
+                command = replace(command, parameter.param_id, parameter.value)
 
             executable = command.split(" ")
             if self.which(executable[0]) == None:
@@ -563,18 +582,40 @@ class MainWindow(QMainWindow):
     def showNewModuleWizard(self, type):
         """
         Shows the wizard dialog that allows creating a new module
+        If type==True, it's a local module. Otherwise it's a context module.
         """
         from forms.newmodulewizard import NewModuleWizard
-        self.newModuleWizard = NewModuleWizard(parent = self, local = type, \
+        self.newModuleWizard = NewModuleWizard(parent=self, local=type, \
             callback = self.addNewModule)
         self.newModuleWizard.show()
 
-    def addNewModule(self, module, local):
+    def addNewModule(self, module, parameters, local):
         """
         Function called by the new module wizard to add the new module to the
         current project
         """
-        self.ui.contextModuleList.addItem(ModuleListWidgetItem(module))
+        if local:
+            self.ui.moduleList.addTopLevelItem(ModuleWidgetItem(module))
+        else:
+            # Add the module to the list of modules
+            self.ui.contextModuleList.addItem(ModuleListWidgetItem(module))
+        
+        # Add the parameters to the list of parameters
+
+        for param in parameters:
+            # Check if the parameter is being redefined. If not, add it.
+            if len(self.parameters) == 0:
+                self.parameters.append(param)
+            else:
+                for existingParam in self.parameters[:]:
+                    if existingParam.param_id == param.param_id:
+                        QMessageBox.critical(QString("Warning"), QString("A" + \
+                        " parameter is being redefined. Please use a different "+\
+                        "name."))
+                    else:
+                        self.parameters.append(param)
+                        print param.param_id
+
         self.updateMappings()
 
     def updateMappings(self):
@@ -586,8 +627,7 @@ class MainWindow(QMainWindow):
         self.ui.mappingsTable.setRowCount(len(self.parameters))
 
         counter = 0
-        for param in self.parameters:
-            print "adding"
+        for param in self.parameters:          
             self.ui.mappingsTable.setItem(counter, 0, \
                 QTableWidgetItem(QString(param.param_id)))
             self.ui.mappingsTable.setItem(counter, 1, \
@@ -607,7 +647,7 @@ class MainWindow(QMainWindow):
         # Check if the module being loaded redefines any current parameter, and
         # if it is, renameeter and edit the command for the module
         # that uses it.
-        print item.module.id
+        # print item.module.id
 
         # Construct the new module
         newitem = ModuleWidgetItem(item.module)
@@ -656,23 +696,23 @@ class MainWindow(QMainWindow):
              
             # Check if this module redefines this parameter
             pattern = re.compile(parameterObject.param_id + "[0-9]*")
-            print parameterObject.param_id + "[0-9]*"
+            # print parameterObject.param_id + "[0-9]*"
 
 
             for existingParameter in self.parameters:
                 print "checking" + existingParameter.param_id
                 if pattern.match(existingParameter.param_id):
-                    print "duplicate found"
+                    # print "duplicate found"
                     numDuplicates += 1
         
             # If there were duplicates, rename this command and edit the module
             if numDuplicates > 0:
                 newName = str(parameterObject.param_id) + str(numDuplicates)
-                print "newName is " + newName
-                print "old command is " + newitem.command
+                # print "newName is " + newName
+                # print "old command is " + newitem.command
                 newitem.command = newitem.command.replace(str(parameterObject.param_id), str(newName))
 
-                print "new command is " + newitem.command
+                # print "new command is " + newitem.command
                 parameterObject.param_id = newName
 
             numDuplicates = 0

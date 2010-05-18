@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed May  5 01:27:40 2010
-#      by: PyQt4 UI code generator 4.6
+# Created: Tue May 18 22:24:40 2010
+#      by: PyQt4 UI code generator 4.7.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -62,6 +62,7 @@ class Ui_MainWindow(object):
         self.newGlobalModuleButton.setMaximumSize(QtCore.QSize(200, 16777215))
         self.newGlobalModuleButton.setObjectName("newGlobalModuleButton")
         self.verticalLayout_2.addWidget(self.newGlobalModuleButton)
+        self.verticalLayout_2.setStretch(3, 1)
         self.contentWrapper.addLayout(self.verticalLayout_2)
         self.line = QtGui.QFrame(self.centralWidget)
         self.line.setFrameShape(QtGui.QFrame.VLine)
@@ -188,11 +189,13 @@ class Ui_MainWindow(object):
         self.executeButton.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.executeButton.setObjectName("executeButton")
         self.verticalLayout_3.addWidget(self.executeButton)
+        self.verticalLayout_3.setStretch(3, 1)
         self.contentWrapper.addLayout(self.verticalLayout_3)
+        self.contentWrapper.setStretch(2, 1)
         self.verticalLayout_5.addLayout(self.contentWrapper)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1123, 22))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1123, 19))
         self.menuBar.setObjectName("menuBar")
         self.menuFile = QtGui.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
@@ -244,7 +247,7 @@ class Ui_MainWindow(object):
         self.moduleList.headerItem().setText(4, QtGui.QApplication.translate("MainWindow", "Dependencies", None, QtGui.QApplication.UnicodeUTF8))
         self.deleteModuleButton.setText(QtGui.QApplication.translate("MainWindow", "Delete Module", None, QtGui.QApplication.UnicodeUTF8))
         self.newProjectModuleButton.setStatusTip(QtGui.QApplication.translate("MainWindow", "Add a new module to this project", None, QtGui.QApplication.UnicodeUTF8))
-        self.newProjectModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Project Module", None, QtGui.QApplication.UnicodeUTF8))
+        self.newProjectModuleButton.setText(QtGui.QApplication.translate("MainWindow", "New Module", None, QtGui.QApplication.UnicodeUTF8))
         self.addToContextButton.setText(QtGui.QApplication.translate("MainWindow", "Add To Context", None, QtGui.QApplication.UnicodeUTF8))
         self.nameLabel.setText(QtGui.QApplication.translate("MainWindow", "Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.nameEdit.setToolTip(QtGui.QApplication.translate("MainWindow", "The name of the current module", None, QtGui.QApplication.UnicodeUTF8))

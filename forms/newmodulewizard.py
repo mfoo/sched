@@ -17,7 +17,6 @@ class NewModuleWizard(QDialog):
     the context
     """
     def __init__(self, parent=None, local=True, callback=True):
-        # TODO: Check the callback=True
         QDialog.__init__(self, parent)
 
         self.callback = callback
@@ -31,9 +30,6 @@ class NewModuleWizard(QDialog):
             QHeaderView.Stretch)
         self.ui.parameterList.horizontalHeader().setResizeMode(2,
             QHeaderView.ResizeToContents)
-
-        self.ui.projectScopeRadioButton.setChecked(local)
-        self.ui.globalScopeRadioButton.setChecked(not local)
 
         self.connect(self.ui.newParameterButton, SIGNAL("clicked()"),
             self.newParameter)
@@ -66,15 +62,20 @@ class NewModuleWizard(QDialog):
         """
         # If a callback function was defined, call it
         if self.callback:
+            parameters = []
             # Construct a Module object to return
             module = Module(str(self.ui.nameInputBox.text()))
             module.add_command(str(self.ui.commandInputBox.text()))
             for i in xrange(0, self.ui.parameterList.rowCount()):
-                list = self.ui.parameterList
-                param = Parameter()
-                param.id = str(list.item(i, 0).text())
-                param.description = str(list.item(i, 1).text())
-                param.value = str(list.item(i, 2).text())
-                module.add_parameter(param)
+                try:
+                    list = self.ui.parameterList
+                    param = Parameter()
+                    param.param_id = str(list.item(i, 0).text())
+                    param.description = str(list.item(i, 1).text())
+                    param.value = str(list.item(i, 2).text())
+                    parameters.append(param)
+                except AttributeError:
+                    # They missed some input data, ignore this param
+                    pass
 
-            self.callback(module, self.local)
+            self.callback(module, parameters, self.local)

@@ -81,7 +81,7 @@ class ProcessHandler:
                 if process.process.poll() == 0 or process.process.poll() == 1:
                     # This process has ended or failed
                     self.value += 1
-                    print "Process " + process.command + " id " + process.process_id + " has ended and is being removed."
+                    print "Process " + str(process.command) + " id " + str(process.process_id) + " has ended and is being removed."
                     self.running.remove(process)
 
                     out = "Current running processes: "
