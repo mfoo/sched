@@ -105,8 +105,6 @@ class MainWindow(QMainWindow):
         self.parameters = []
         self.context_parameters = []
 
-        # Override the default cell changed behaviour for the mappings table
-
 
     def mappingChanged(self, row, column):
         try:
@@ -206,17 +204,15 @@ class MainWindow(QMainWindow):
         
         self.ui.moduleList.currentItem().updateUi()
 
-        self.changed = True
-
-        print str(self.ui.commandEdit.toPlainText())
+        self.changed = True 
 
     def openFileClicked(self):
         """
         Displays a file dialog to get the filename of the file to save to
         """
         fileName = QFileDialog.getOpenFileName(self, "Open File",
-            os.path.expanduser("~") + "/.sched/projects/", "Sched files (*)")
-
+#            os.path.expanduser("~") + "/.sched/projects/", "Sched files (*)")
+            ".", "Sched files (*)")
         if fileName:
             self.loadProject(fileName)
 
@@ -228,6 +224,9 @@ class MainWindow(QMainWindow):
         from imports.process import Process
 
         modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
+
+        # Make a copy of the modules so that when they go through the execution process and have dependencies removed and variable substitution, they dont modify the values in the list.
+        modules = deepcopy(modules)
         processes = []
 
         # Loop through the modules, check if they are special modules
@@ -417,7 +416,7 @@ class MainWindow(QMainWindow):
 
 
         for module in modules:
-            print module.name
+            
             if module.childCount() == 0:
                 mod = parseModule(module)
                 list.appendChild(mod)
@@ -547,8 +546,6 @@ class MainWindow(QMainWindow):
         module's command to find any variable names then checks if any other
         modules use those variable names.
         """
-        print "HI"
-
         toDelete = self.ui.moduleList.currentItem()
 
         # Find all of the variables used by this module
@@ -556,14 +553,12 @@ class MainWindow(QMainWindow):
 
         # Remove anything that doesn't start with %
         for parameter in self.parameters:
-            print "lol param found"
             temp = string.replace(toDelete.command, parameter.param_id,
                     parameter.value)
 
             if toDelete.command == temp:
                 pass
             else:
-                print "match"
                 # The module uses this parameter, keep it
                 variables.append(parameter)
 
@@ -574,28 +569,28 @@ class MainWindow(QMainWindow):
         # elsewhere or not
         found = False
         for variable in variables:
-            print "investigating " + str(variable.param_id)
+            # print "investigating " + str(variable.param_id)
             # For each variable we must search all the other modules to see if
             # they define it.
             for module in modules:
                 if module is not toDelete:
-                    print "found other module"
+                    # print "found other module"
                     temp = string.replace(module.command, variable.param_id,
                         variable.value)
 
                     if temp != module.command:
-                        print "something uses it"
+                        # print "something uses it"
                         # The module uses this variable
                         found = True
 
             # If no other module defines it, remove it
             if found == False:
-                print "nothing uses it"
+                # print "nothing uses it"
                 # Find the row in the table that it is
                 self.parameters.remove(variable)
                 self.updateMappings()
-        if found == False:
-            self.ui.moduleList.removeItemWidget(self.ui.moduleList.currentItem(),0)
+
+        self.ui.moduleList.removeItemWidget(self.ui.moduleList.currentItem(),0)
 
     def showNewModuleWizard(self, type):
         """
@@ -623,7 +618,7 @@ class MainWindow(QMainWindow):
         for param in parameters:
             # Check if the parameter is being redefined. If not, add it.
             if len(self.parameters) == 0:
-                self.parameters.append(param)
+                self.context_parameters.append(param)
             else:
                 for existingParam in self.parameters[:]:
                     if existingParam.param_id == param.param_id:
@@ -631,8 +626,8 @@ class MainWindow(QMainWindow):
                         " parameter is being redefined. Please use a different "+\
                         "name."))
                     else:
-                        self.parameters.append(param)
-                        print param.param_id
+                        self.context_parameters.append(param)
+                       
 
         self.updateMappings()
 
@@ -665,44 +660,55 @@ class MainWindow(QMainWindow):
         # Check if the module being loaded redefines any current parameter, and
         # if it is, renameeter and edit the command for the module
         # that uses it.
-        # print item.module.id
 
         # Construct the new module
         newitem = ModuleWidgetItem(item.module)
         
         highestId = 0
         duplicateNameCount = 0
-
-#        modules = [self.ui.contextModuleList.item(x).module for x in xrange(0, \
- #           self.ui.contextModuleList.count())]
  
         modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
+
+        parameterObjects = []
 
         for module in modules:
             # Check if any current modules have a higher ID
             if module.id > highestId:
                 highestId = int(module.id)
-        
+
         # Check for the parameters of the module redefining any parameters
         # Loop through the parameters that are used in the context module
-        command = newitem.command
-        
-        # Strip out any words that don't begin with %
-        commands = command.split(" ")
+        command = newitem.command[:]
 
-        for variable in commands:
-            if not str(variable).startswith("%"):
-                commands.remove(variable)
+        def sortByLength(a,b):
+            out = len(b.param_id) - len(a.param_id)
+            if out == 0:
+                if a.param_id == b.param_id:
+                    return out
 
-        # Commands now contains all of the parameters used in the module command
-        # Loop through the context_params list and get the corresponding parameter
-        # objects
-        parameterObjects = []
+                if a.param_id > b.param_id:
+                    return -1
+                else:
+                    return 1
+            else:
+                return out
 
-        for newcommand in commands:
-            for param in self.context_parameters:
-                if param.param_id == newcommand:
-                    parameterObjects.append(deepcopy(param))
+        for p in self.context_parameters:
+            print p.param_id
+
+        self.context_parameters.sort(cmp=sortByLength)
+
+        for p in self.context_parameters:
+            print p.param_id
+
+        for variable in self.context_parameters:
+            # Check which variables this module defines
+            temp = string.replace(command, variable.param_id, variable.value)
+
+            if temp != command:
+                parameterObjects.append(deepcopy(variable))
+
+            command = temp
                 
         # Now that we have all the parameter objects relating to this module,
         # we need to check if they have been used before or not
@@ -714,23 +720,16 @@ class MainWindow(QMainWindow):
              
             # Check if this module redefines this parameter
             pattern = re.compile(parameterObject.param_id + "[0-9]*")
-            # print parameterObject.param_id + "[0-9]*"
-
 
             for existingParameter in self.parameters:
-                print "checking" + existingParameter.param_id
                 if pattern.match(existingParameter.param_id):
-                    # print "duplicate found"
                     numDuplicates += 1
         
             # If there were duplicates, rename this command and edit the module
             if numDuplicates > 0:
                 newName = str(parameterObject.param_id) + str(numDuplicates)
-                # print "newName is " + newName
-                # print "old command is " + newitem.command
                 newitem.command = newitem.command.replace(str(parameterObject.param_id), str(newName))
 
-                # print "new command is " + newitem.command
                 parameterObject.param_id = newName
 
             numDuplicates = 0
@@ -747,9 +746,9 @@ class MainWindow(QMainWindow):
         pattern = re.compile(newitem.name + "( \([0-9]+\))?")
         duplicateNameCount = 0
         for module in modules:
-            print "matching " + module.name + " against " + newitem.name
+            # print "matching " + module.name + " against " + newitem.name
             if pattern.match(module.name):
-                print "match"
+                # print "match"
                 # If a copy of this module already exists then we add (n) onto
                 # the name of this module, where n is the number of modules of
                 # that type that already exist
