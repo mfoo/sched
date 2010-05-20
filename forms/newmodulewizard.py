@@ -66,6 +66,7 @@ class NewModuleWizard(QDialog):
             # Construct a Module object to return
             module = Module(str(self.ui.nameInputBox.text()))
             module.add_command(str(self.ui.commandInputBox.text()))
+            module.add_description(str(self.ui.descriptionInputBox.text()))
             for i in xrange(0, self.ui.parameterList.rowCount()):
                 try:
                     list = self.ui.parameterList

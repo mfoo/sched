@@ -546,51 +546,26 @@ class MainWindow(QMainWindow):
         module's command to find any variable names then checks if any other
         modules use those variable names.
         """
-        toDelete = self.ui.moduleList.currentItem()
+        self.ui.moduleList.removeItemWidget(self.ui.moduleList.currentItem(),0)
+        self.updateMappings()
 
-        # Find all of the variables used by this module
-        variables = []
+        try:
+            # Get a list of all modules
+            modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
 
-        # Remove anything that doesn't start with %
-        for parameter in self.parameters:
-            temp = string.replace(toDelete.command, parameter.param_id,
-                    parameter.value)
-
-            if toDelete.command == temp:
-                pass
-            else:
-                # The module uses this parameter, keep it
-                variables.append(parameter)
-
-        # Get a list of all modules
-        modules = self.ui.moduleList.findItems("*", Qt.MatchWildcard)
-
-        # for each variable that the deleting module uses, check if it's used
-        # elsewhere or not
-        found = False
-        for variable in variables:
-            # print "investigating " + str(variable.param_id)
-            # For each variable we must search all the other modules to see if
-            # they define it.
-            for module in modules:
-                if module is not toDelete:
-                    # print "found other module"
-                    temp = string.replace(module.command, variable.param_id,
-                        variable.value)
-
-                    if temp != module.command:
-                        # print "something uses it"
-                        # The module uses this variable
+            for parameter in self.parameters:
+                found = False
+                for module in modules:
+                    if module.command.find(parameter.param_id) != -1:
                         found = True
 
-            # If no other module defines it, remove it
-            if found == False:
-                # print "nothing uses it"
-                # Find the row in the table that it is
-                self.parameters.remove(variable)
-                self.updateMappings()
+                if found == False:
+                    # No module defines it
+                    self.parameters.remove(parameter)
+        except AttributeError:
+            return
 
-        self.ui.moduleList.removeItemWidget(self.ui.moduleList.currentItem(),0)
+        self.updateMappings()
 
     def showNewModuleWizard(self, type):
         """
@@ -607,27 +582,41 @@ class MainWindow(QMainWindow):
         Function called by the new module wizard to add the new module to the
         current project
         """
+
         if local:
+            # Add the parameters to the list of parameters
+            for param in parameters:
+                # Check if the parameter is being redefined. If not, add it.
+                if len(self.parameters) != 0:
+                    for existingParam in self.parameters[:]:
+                        if existingParam.param_id == param.param_id:
+                            QMessageBox.critical(self, "Warning", "A parameter is being redefined. Please use a different name.")
+                            return
+                        else:
+                            self.parameters.append(param)
+                else:
+                    self.parameters.append(param)
+        else:
+            # It's a context parameter
+            for param in parameters:
+                # Check if the parameter is being redefined. If not, add it.
+                if len(self.context_parameters) != 0:
+                    for existingParam in self.context_parameters[:]:
+                        if existingParam.param_id == param.param_id:
+                            QMessageBox.critical(self, "Warning", "A parameter is being redefined. Please use a different name.")
+                            return
+                        else:
+                            self.context_parameters.append(param)
+                else:
+                    self.context_parameters.append(param)
+
+        if local:
+            thisId = self.ui.moduleList.topLevelItemCount()
+            module.add_id(thisId)
             self.ui.moduleList.addTopLevelItem(ModuleWidgetItem(module))
         else:
             # Add the module to the list of modules
             self.ui.contextModuleList.addItem(ModuleListWidgetItem(module))
-        
-        # Add the parameters to the list of parameters
-
-        for param in parameters:
-            # Check if the parameter is being redefined. If not, add it.
-            if len(self.parameters) == 0:
-                self.context_parameters.append(param)
-            else:
-                for existingParam in self.parameters[:]:
-                    if existingParam.param_id == param.param_id:
-                        QMessageBox.critical(QString("Warning"), QString("A" + \
-                        " parameter is being redefined. Please use a different "+\
-                        "name."))
-                    else:
-                        self.context_parameters.append(param)
-                       
 
         self.updateMappings()
 
@@ -693,6 +682,8 @@ class MainWindow(QMainWindow):
             else:
                 return out
 
+        print "printing context params"
+
         for p in self.context_parameters:
             print p.param_id
 
@@ -700,6 +691,8 @@ class MainWindow(QMainWindow):
 
         for p in self.context_parameters:
             print p.param_id
+
+        print "finished printing context params"
 
         for variable in self.context_parameters:
             # Check which variables this module defines
